@@ -36,11 +36,11 @@ function Home() {
         <h2 className="text-2xl font-bold text-center mb-10">
           Everything a Ghanaian landlord needs to manage rentals
         </h2>
-        <p className="text-gray-700 max-w-2xl mx-auto mb-8">
+        <p className="text-gray-700 max-w-2xl text-center mx-auto mb-8">
           One place for your properties, your tenants and your money.
         </p>
 
-        <div className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+        <div className="grid gap-6 md:grid-cols-4 max-w-5xl mx-auto">
           <div className="border rounded p-6">
             <h3 className="font-bold mb-2">
               Know what's occupied and what's empty
