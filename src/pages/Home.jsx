@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function Home() {
   return (
-    <div>
+    <div >
       <section className="bg-emerald-50 px-7=6 py-30 text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Rental property management software for landlords in Ghana
