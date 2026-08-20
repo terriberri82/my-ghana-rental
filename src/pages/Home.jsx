@@ -3,18 +3,18 @@ import { Link } from "react-router-dom";
 function Home() {
   return (
     <div>
-      <section className="bg-blue-50 px-6 py-20 text-center">
+      <section className="bg-emerald-50 px-7=6 py-30 text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Rental property management software for landlords in Ghana
         </h1>
-        <p className="text-gray-700 max-w-2xl mx-auto mb-8">
+        <p className="text-gray-700 max-w-3xl mx-auto mb-8">
           Track properties, tenants, leases and rent payments in one place.
           Record rent paid by MTN MoMo, Telecel Cash, bank transfer or cash, and
           always know exactly who has paid and who hasn't.
         </p>
         <Link
           to="/signup"
-          className="bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-800"
+          className="bg-emerald-600 text-white px-6 py-3 rounded hover:bg-blue-800"
         >
           Get Started
         </Link>
