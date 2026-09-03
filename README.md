@@ -1,6 +1,7 @@
 
 
 # My Ghana Rental
+myghanarental.netlify.app
 
 A property management web app for landlords and tenants in Ghana.
 
@@ -101,6 +102,29 @@ ever reloading the page.
 
 This project needs it because it has many distinct views, and each needs its own
 address so users can bookmark pages, use the back button and share links.
+
+How it is used here:
+
+`BrowserRouter` wraps the app and watches the URL.
+
+`Routes` and `Route` map each URL to the component that should render there.
+
+`Link` moves between pages without a full reload, which is what keeps React
+state alive during navigation. A plain anchor tag would reload the page and wipe
+that state.
+
+`Navigate` handles route protection. `AuthLayout` renders `<Navigate to="/login" replace />`
+when a logged out user tries to reach the dashboard, and `UnauthLayout` sends a
+logged in user away from the login and signup pages. Using the `Navigate`
+component rather than calling `useNavigate` inside `useEffect` avoids an
+infinite redirect loop.
+
+`Outlet` is the slot inside a layout where the matched child route renders. The
+layout stays mounted while only the inner page changes.
+
+`useNavigate` redirects after an action rather than after a click. Submitting
+the signup form sends the user to the dashboard programmatically, with
+`replace: true` so the back button will not return them to the form.
 
 
 ## Getting Started

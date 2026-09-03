@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput";
 
-function Login() {
+function Login({setIsLoggedIn}) {
+  const navigate = useNavigate(); 
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -17,7 +19,16 @@ function Login() {
 
   function handleSubmit(event) {
     event.preventDefault();
+
+    if (formData.email === "" || formData.password === "") {
+      alert("Please fill in all fields");
+      return;
+    }
+
     console.log(formData);
+    setIsLoggedIn(true);
+
+    navigate("/dashboard", { replace: true });
   }
 
   return (

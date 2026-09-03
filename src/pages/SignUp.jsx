@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput";
 
-function SignUp() {
+function SignUp({ setIsLoggedIn }) {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     role: "landlord",
   });
 
@@ -20,7 +25,30 @@ function SignUp() {
 
   function handleSubmit(event) {
     event.preventDefault();
+
+    if (
+      formData.firstName === "" ||
+      formData.lastName === "" ||
+      formData.email === "" ||
+      formData.password === ""
+    ) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
     console.log(formData);
+
+    setIsLoggedIn(true);
+
+    navigate("/dashboard", {
+      replace: true,
+      state: { name: formData.firstName, role: formData.role },
+    });
   }
 
   return (
@@ -29,12 +57,20 @@ function SignUp() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <FormInput
-          label="Full name"
+          label="First name"
           type="text"
-          name="name"
-          value={formData.name}
+          name="firstName"
+          value={formData.firstName}
           onChange={handleChange}
-          placeholder="Ama Mensah"
+          placeholder="Ama"
+        />
+        <FormInput
+          label="Last name"
+          type="text"
+          name="lastName"
+          value={formData.lastName}
+          onChange={handleChange}
+          placeholder="Mensah"
         />
 
         <FormInput
@@ -55,14 +91,50 @@ function SignUp() {
           placeholder="0244000000"
         />
 
-        <FormInput
-          label="Password"
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Create a password"
-        />
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-gray-700"
+          >
+            Password
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Create a password"
+              className="border rounded px-3 py-2 w-full pr-16"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-700"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="confirmPassword"
+            className="text-sm font-medium text-gray-700"
+          >
+            Confirm password
+          </label>
+          <input
+            id="confirmPassword"
+            type={showPassword ? "text" : "password"}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Repeat your password"
+            className="border rounded px-3 py-2 w-full"
+          />
+        </div>
 
         <div className="flex flex-col gap-1">
           <label htmlFor="role" className="text-sm font-medium text-gray-700">
