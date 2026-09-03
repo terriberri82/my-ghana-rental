@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import FormInput from "../components/FormInput";
 
-function Login({setIsLoggedIn}) {
-  const navigate = useNavigate(); 
+function Login() {
+  const { setIsLoggedIn } = useOutletContext();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",

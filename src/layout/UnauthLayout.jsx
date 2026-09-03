@@ -1,16 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
-import UnauthenticatedWrapper from "../wrapper/UnauthWrapper";
 
-function UnauthLayout({ isLoggedIn }) {
+function UnauthLayout({ isLoggedIn, setIsLoggedIn }) {
   if (isLoggedIn) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return (
-    <UnauthenticatedWrapper>
-      <Outlet />
-    </UnauthenticatedWrapper>
-  );
+  return <Outlet context={{ isLoggedIn, setIsLoggedIn }} />;
 }
 
 export default UnauthLayout;

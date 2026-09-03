@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import FormInput from "../components/FormInput";
 
-function SignUp({ setIsLoggedIn }) {
+function SignUp() {
+  const { setIsLoggedIn } = useOutletContext();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
