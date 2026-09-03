@@ -1,10 +1,10 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-const UnauthenticatedWrapper = ({ children, isLoggedIn, setIsLoggedIn }) => {
+const UnauthenticatedWrapper = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <Navbar />
       <main className="flex-grow">{children}</main>
       <Footer />
     </div>

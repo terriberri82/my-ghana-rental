@@ -1,0 +1,30 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "Ama",
+      "lastName": "Mensah",
+      "email": "ama@example.com",
+      "password": "password123",
+      "role": "landlord",
+      "isVerified": true,
+      "profile": {
+        "avatar": "/images/avatar.png",
+        "bio": "Landlord managing three units in Accra"
+      }
+    },
+    {
+      "id": 2,
+      "firstName": "Kwame",
+      "lastName": "Owusu",
+      "email": "kwame@example.com",
+      "password": "password123",
+      "role": "tenant",
+      "isVerified": true,
+      "profile": {
+        "avatar": "/images/avatar.png",
+        "bio": "Tenant at East Legon Apartments"
+      }
+    }
+  ]
+}

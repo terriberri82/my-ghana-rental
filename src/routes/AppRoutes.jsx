@@ -4,37 +4,22 @@ import AuthLayout from "../layout/AuthLayout";
 import UnauthLayout from "../layout/UnauthLayout";
 import { publicRoutes, unauthRoutes, authRoutes } from "./routeList";
 
-function AppRoutes({ isLoggedIn, setIsLoggedIn }) {
+function AppRoutes() {
   return (
     <Routes>
-      <Route
-        element={
-          <PublicLayout isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-        }
-      >
+      <Route element={<PublicLayout />}>
         {publicRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />
         ))}
 
-        <Route
-          element={
-            <UnauthLayout
-              isLoggedIn={isLoggedIn}
-              setIsLoggedIn={setIsLoggedIn}
-            />
-          }
-        >
+        <Route element={<UnauthLayout />}>
           {unauthRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />
           ))}
         </Route>
       </Route>
 
-      <Route
-        element={
-          <AuthLayout isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-        }
-      >
+      <Route element={<AuthLayout />}>
         {authRoutes.map((route) => (
           <Route key={route.path} path={route.path} element={route.element} />
         ))}

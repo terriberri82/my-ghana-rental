@@ -1,12 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-function Navbar({ isLoggedIn, setIsLoggedIn }) {
-  const navigate = useNavigate();
-
-  function handleLogout() {
-    setIsLoggedIn(false);
-    navigate("/", { replace: true });
-  }
+function Navbar() {
+  const { isLoggedIn, user } = useAuth();
 
   return (
     <nav className="bg-white border-b px-6 py-4 flex items-center justify-between">
@@ -15,36 +11,20 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       </Link>
 
       <div className="flex gap-6 items-center text-sm">
-        <Link to="/" className="text-gray-700 hover:text-emerald-600">
-          Home
-        </Link>
-        <Link to="/about" className="text-gray-700 hover:text-emerald-600">
-          About
-        </Link>
-        <Link to="/contact" className="text-gray-700 hover:text-emerald-600">
-          Contact
-        </Link>
+        <Link to="/" className="text-gray-700 hover:text-emerald-600">Home</Link>
+        <Link to="/about" className="text-gray-700 hover:text-emerald-600">About</Link>
+        <Link to="/contact" className="text-gray-700 hover:text-emerald-600">Contact</Link>
 
         {isLoggedIn ? (
-          <>
-            <Link
-              to="/dashboard"
-              className="text-gray-700 hover:text-emerald-600"
-            >
-              Dashboard
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700"
-            >
-              Logout
-            </button>
-          </>
+          <Link
+            to="/dashboard"
+            className="font-medium text-emerald-700 hover:text-emerald-800"
+          >
+            {user.firstName} {user.lastName}
+          </Link>
         ) : (
           <>
-            <Link to="/login" className="text-gray-700 hover:text-emerald-600">
-              Login
-            </Link>
+            <Link to="/login" className="text-gray-700 hover:text-emerald-600">Login</Link>
             <Link
               to="/signup"
               className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700"
