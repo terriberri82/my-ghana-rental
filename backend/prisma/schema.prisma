@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  LANDLORD
+  TENANT
+}
+
+enum PropertyType {
+  COMPOUND_HOUSE
+  APARTMENT_BLOCK
+  SINGLE_FAMILY
+  COMMERCIAL
+}
+
+enum Region {
+  GREATER_ACCRA
+  ASHANTI
+  WESTERN
+  WESTERN_NORTH
+  CENTRAL
+  EASTERN
+  VOLTA
+  OTI
+  NORTHERN
+  SAVANNAH
+  NORTH_EAST
+  UPPER_EAST
+  UPPER_WEST
+  BONO
+  BONO_EAST
+  AHAFO
+}
+
+enum RentPeriod {
+  MONTHLY
+  SIX_MONTHS
+  ANNUAL
+}
+
+enum UnitStatus {
+  VACANT
+  OCCUPIED
+}
+
+enum LeaseStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY
+  CARD
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum ReportType {
+  MOVE_IN
+  MOVE_OUT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String?  @unique
+  phone        String   @unique
+  passwordHash String?
+  role         Role     @default(TENANT)
+  inviteToken  String?  @unique
+  createdAt    DateTime @default(now())
+
+  properties          Property[]
+  leases              Lease[]
+  payments            Payment[]            @relation("PaymentTenant")
+  recordedPayments    Payment[]            @relation("PaymentRecorder")
+  maintenanceRequests MaintenanceRequest[]
+  conditionReports    ConditionReport[]
+}
+
+model Property {
+  id           String       @id @default(uuid())
+  landlordId   String
+  name         String
+  address      String
+  city         String
+  region       Region
+  propertyType PropertyType
+  description  String?
+  createdAt    DateTime     @default(now())
+
+  landlord User   @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  units    Unit[]
+}
+
+model Unit {
+  id         String     @id @default(uuid())
+  propertyId String
+  unitLabel  String
+  bedrooms   Int
+  bathrooms  Int
+  rentAmount Decimal    @db.Decimal(12, 2)
+  rentPeriod RentPeriod @default(MONTHLY)
+  status     UnitStatus @default(VACANT)
+  createdAt  DateTime   @default(now())
+
+  property            Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  leases              Lease[]
+  maintenanceRequests MaintenanceRequest[]
+}
+
+model Lease {
+  id              String      @id @default(uuid())
+  unitId          String
+  tenantId        String
+  startDate       DateTime
+  endDate         DateTime
+  rentAmount      Decimal     @db.Decimal(12, 2)
+  rentPeriod      RentPeriod  @default(MONTHLY)
+  advanceMonths   Int         @default(0)
+  depositAmount   Decimal     @default(0) @db.Decimal(12, 2)
+  agreementUrl    String?
+  status          LeaseStatus @default(ACTIVE)
+  previousLeaseId String?     @unique
+  createdAt       DateTime    @default(now())
+
+  unit             Unit              @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  tenant           User              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  previousLease    Lease?            @relation("LeaseRenewal", fields: [previousLeaseId], references: [id])
+  renewedTo        Lease?            @relation("LeaseRenewal")
+  payments         Payment[]
+  conditionReports ConditionReport[]
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  leaseId           String
+  tenantId          String
+  recordedById      String?
+  amount            Decimal       @db.Decimal(12, 2)
+  method            PaymentMethod @default(MOBILE_MONEY)
+  paystackReference String?       @unique
+  status            PaymentStatus @default(PENDING)
+  coversFrom        DateTime
+  coversTo          DateTime
+  receiptNumber     String?       @unique
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+
+  lease      Lease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  tenant     User  @relation("PaymentTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  recordedBy User? @relation("PaymentRecorder", fields: [recordedById], references: [id])
+}
+
+model MaintenanceRequest {
+  id          String        @id @default(uuid())
+  unitId      String
+  tenantId    String
+  title       String
+  description String
+  priority    Priority      @default(MEDIUM)
+  status      RequestStatus @default(OPEN)
+  imageUrls   String[]
+  createdAt   DateTime      @default(now())
+  resolvedAt  DateTime?
+
+  unit   Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  tenant User @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model ConditionReport {
+  id          String     @id @default(uuid())
+  leaseId     String
+  createdById String
+  type        ReportType
+  notes       String?
+  imageUrls   String[]
+  createdAt   DateTime   @default(now())
+
+  lease     Lease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+  createdBy User  @relation(fields: [createdById], references: [id])
+}
