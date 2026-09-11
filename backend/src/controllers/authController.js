@@ -1,0 +1,136 @@
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import prisma from "../lib/prisma.js";
+
+const setAuthCookie = (res, user) => {
+  const token = jwt.sign(
+    { userId: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" },
+  );
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+};
+
+export const signup = async (req, res) => {
+  const { firstName, lastName, phone, password, email } = req.body;
+
+  if (!firstName || !lastName || !phone || !password) {
+    return res.status(400).json({
+      message: "First name, last name, phone and password are required.",
+    });
+  }
+
+  const existing = await prisma.user.findUnique({ where: { phone } });
+  if (existing) {
+    return res.status(409).json({
+      message:
+        "An account with this phone number already exists. Try logging in instead.",
+    });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      firstName,
+      lastName,
+      phone,
+      email: email || null,
+      passwordHash,
+      role: "LANDLORD",
+    },
+  });
+
+  setAuthCookie(res, user);
+
+  res.status(201).json({
+    user: {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+    },
+  });
+};
+
+export const login = async (req, res) => {
+  const { phone, password } = req.body;
+
+  if (!phone || !password) {
+    return res.status(400).json({
+      message: "Phone number and password are required.",
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { phone } });
+
+  if (!user) {
+    return res.status(404).json({
+      message:
+        "No account found with this phone number. Sign up to get started.",
+    });
+  }
+
+  if (!user.passwordHash) {
+    return res.status(403).json({
+      message: "This account has not been activated yet.",
+    });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.passwordHash);
+
+  if (!isMatch) {
+    return res.status(401).json({
+      message: "Incorrect password. Please try again.",
+    });
+  }
+
+  setAuthCookie(res, user);
+
+  res.status(200).json({
+    user: {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+    },
+  });
+};
+
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
+  res.status(200).json({ message: "Logged out." });
+};
+
+export const getMe = async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.userId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found." });
+  }
+
+  res.status(200).json({ user });
+};
