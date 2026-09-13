@@ -6,12 +6,20 @@ function Navbar() {
   const { isLoggedIn, user } = useAuth();
   const { pathname } = useLocation();
 
-  const overlay = pathname === "/about";
+  const transparent =
+    pathname === "/about" || pathname === "/login" || pathname === "/signup";
+
+  const lightText = pathname === "/about" || pathname === "/signup";
+
+  const linkClass =
+    pathname === "/login"
+      ? "text-ebony/75 hover:text-bayou md:text-paper md:hover:text-paper/70"
+      : "text-ebony/75 hover:text-bayou";
 
   return (
     <nav
       className={
-        overlay ? "absolute inset-x-0 top-0 z-30" : "bg-paper relative z-30"
+        transparent ? "absolute inset-x-0 top-0 z-30" : "bg-paper relative z-30"
       }
     >
       <div className="max-w-7xl mx-auto px-6 md:px-14 h-24 flex items-center justify-between">
@@ -19,7 +27,7 @@ function Navbar() {
           <img src={logo} alt="" className="w-10 h-10" />
           <span
             className={`font-display text-lg font-semibold ${
-              overlay ? "text-paper" : "text-bayou"
+              lightText ? "text-paper" : "text-bayou"
             }`}
           >
             My Ghana Rental
@@ -27,20 +35,20 @@ function Navbar() {
         </Link>
 
         <div className="flex gap-8 items-center text-sm">
-          <Link to="/about" className="text-ebony/75 hover:text-bayou">
+          <Link to="/about" className={linkClass}>
             About
           </Link>
-          <Link to="/contact" className="text-ebony/75 hover:text-bayou">
+          <Link to="/contact" className={linkClass}>
             Contact
           </Link>
 
           {isLoggedIn ? (
-            <Link to="/dashboard" className="text-ebony/75 hover:text-bayou">
+            <Link to="/dashboard" className={linkClass}>
               {user?.firstName}
             </Link>
           ) : (
             <>
-              <Link to="/login" className="text-ebony/75 hover:text-bayou">
+              <Link to="/login" className={linkClass}>
                 Login
               </Link>
               <Link

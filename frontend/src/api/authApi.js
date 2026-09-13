@@ -4,15 +4,20 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function loginRequest({ email, password }) {
+function normalize(value) {
+  return String(value).replace(/\D/g, "");
+}
+
+export async function loginRequest({ phone, password }) {
   await delay(800);
 
   const found = userData.users.find(
-    (user) => user.email === email && user.password === password,
+    (user) =>
+      normalize(user.phone) === normalize(phone) && user.password === password,
   );
 
   if (!found) {
-    throw new Error("Invalid email or password");
+    throw new Error("Invalid phone number or password");
   }
 
   const { password: _removed, ...safeUser } = found;
@@ -30,13 +35,15 @@ export async function loginRequest({ email, password }) {
   };
 }
 
-export async function signupRequest({ firstName, lastName, email, role }) {
+export async function signupRequest({ firstName, lastName, phone, password }) {
   await delay(800);
 
-  const taken = userData.users.find((user) => user.email === email);
+  const taken = userData.users.find(
+    (user) => normalize(user.phone) === normalize(phone),
+  );
 
   if (taken) {
-    throw new Error("An account with that email already exists");
+    throw new Error("An account with that phone number already exists");
   }
 
   return {
@@ -47,8 +54,8 @@ export async function signupRequest({ firstName, lastName, email, role }) {
         id: Date.now(),
         firstName,
         lastName,
-        email,
-        role,
+        phone,
+        role: "landlord",
         isVerified: false,
         profile: { avatar: "/images/avatar.png", bio: "" },
       },
