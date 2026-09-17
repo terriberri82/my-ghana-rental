@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { signupRequest } from "../api/authApi";
 import Modal from "../components/ui/Modal";
 import sideImage from "../assets/townhouse-dusk-tall.jpg";
 
 function Signup() {
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -34,13 +33,12 @@ function Signup() {
 
     setLoading(true);
     try {
-      const { data } = await signupRequest({
+      await signup({
         firstName: form.firstName,
         lastName: form.lastName,
         phone: form.phone,
         password: form.password,
       });
-      login(data.user, data.tokens);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -170,7 +168,10 @@ function Signup() {
 
           <p className="mt-6 text-sm text-ebony/65">
             Already have an account?{" "}
-            <Link to="/login" className="text-bayou font-medium hover:underline">
+            <Link
+              to="/login"
+              className="text-bayou font-medium hover:underline"
+            >
               Log in
             </Link>
           </p>

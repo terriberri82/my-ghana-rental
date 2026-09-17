@@ -45,7 +45,9 @@ function Home() {
                 <p className="font-display text-2xl md:text-3xl font-bold text-bayou">
                   4
                 </p>
-                <p className="mt-1 text-xs text-ebony/60">Ways to record rent</p>
+                <p className="mt-1 text-xs text-ebony/60">
+                  Ways to record rent
+                </p>
               </div>
               <div>
                 <p className="font-display text-2xl md:text-3xl font-bold text-bayou">

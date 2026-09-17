@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { loginRequest } from "../api/authApi";
 import Modal from "../components/ui/Modal";
 import sideImage from "../assets/townhouse-dusk-tall.jpg";
 
@@ -23,11 +22,7 @@ function Login() {
 
     setLoading(true);
     try {
-      const { data } = await loginRequest({
-        phone: form.phone,
-        password: form.password,
-      });
-      login(data.user, data.tokens);
+      await login(form.phone, form.password);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -97,7 +92,10 @@ function Login() {
 
           <p className="mt-6 text-sm text-ebony/65">
             No account yet?{" "}
-            <Link to="/signup" className="text-bayou font-medium hover:underline">
+            <Link
+              to="/signup"
+              className="text-bayou font-medium hover:underline"
+            >
               Sign up
             </Link>
           </p>

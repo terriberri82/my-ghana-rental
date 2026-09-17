@@ -1,14 +1,10 @@
-import Sidebar from "../components/Sidebar";
-import AppNavbar from "../components/AppNavbar";
+import Sidebar from "../components/app/Sidebar";
 
 const AuthenticatedWrapper = ({ children }) => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-paper">
       <Sidebar />
-      <div className="flex flex-col flex-grow">
-        <AppNavbar />
-        <main className="flex-grow p-8">{children}</main>
-      </div>
+      <main className="flex-1 min-w-0 px-5 md:px-10 py-8">{children}</main>
     </div>
   );
 };
