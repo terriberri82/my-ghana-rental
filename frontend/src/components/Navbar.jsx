@@ -43,8 +43,11 @@ function Navbar() {
           </Link>
 
           {isLoggedIn ? (
-            <Link to="/dashboard" className={linkClass}>
-              {user?.firstName}
+             <Link
+              to="/dashboard"
+              className="bg-sun text-ebony font-medium px-6 py-2.5 rounded-full hover:brightness-95 transition-colors"
+            >
+              Dashboard
             </Link>
           ) : (
             <>

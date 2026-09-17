@@ -74,7 +74,6 @@ export default function UnitDetail() {
   const leases = unit.leases || [];
   const activeLease = leases.find((l) => l.status === "ACTIVE") || null;
   const payments = activeLease ? activeLease.payments : [];
-  const isOccupied = unit.status === "OCCUPIED";
 
   const totalRecorded = payments
     .filter((p) => p.status === "SUCCESS")
@@ -89,55 +88,43 @@ export default function UnitDetail() {
         ← {unit.property.name}
       </Link>
 
-      <div className="flex items-start gap-4 mb-2">
-        <div
-          className={`w-14 h-14 shrink-0 grid place-items-center rounded-md font-display font-bold ${
-            isOccupied ? "bg-bayou text-paper" : "bg-brick/10 text-brick"
-          }`}
-        >
-          {unit.unitLabel}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <PageHeader
-            title={`Unit ${unit.unitLabel}`}
-            subtitle={`${unit.bedrooms} bed · ${unit.bathrooms} bath · GHS ${Number(
-              unit.rentAmount,
-            ).toLocaleString()} per month`}
-            action={
-              <div className="flex items-center gap-3">
-                <Link
-                  to={`/units/${id}/edit`}
-                  className="text-sm text-ebony/60 hover:text-bayou"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="text-sm text-brick hover:underline"
-                >
-                  Delete
-                </button>
-                {activeLease ? (
-                  <Link
-                    to={`/payments/new?leaseId=${activeLease.id}`}
-                    className="bg-sun text-ebony font-medium text-sm px-6 py-2.5 rounded-full hover:brightness-95"
-                  >
-                    Record payment
-                  </Link>
-                ) : (
-                  <Link
-                    to={`/leases/new?unitId=${id}`}
-                    className="bg-sun text-ebony font-medium text-sm px-6 py-2.5 rounded-full hover:brightness-95"
-                  >
-                    Add tenant
-                  </Link>
-                )}
-              </div>
-            }
-          />
-        </div>
-      </div>
+      <PageHeader
+        title={`Unit ${unit.unitLabel}`}
+        subtitle={`${unit.bedrooms} bed · ${unit.bathrooms} bath · GHS ${Number(
+          unit.rentAmount,
+        ).toLocaleString()} per month`}
+        action={
+          <div className="flex items-center gap-3">
+            <Link
+              to={`/units/${id}/edit`}
+              className="text-sm text-ebony/60 hover:text-bayou"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="text-sm text-brick hover:underline"
+            >
+              Delete
+            </button>
+            {activeLease ? (
+              <Link
+                to={`/payments/new?leaseId=${activeLease.id}`}
+                className="bg-sun text-ebony font-medium text-sm px-6 py-2.5 rounded-full hover:brightness-95"
+              >
+                Record payment
+              </Link>
+            ) : (
+              <Link
+                to={`/leases/new?unitId=${id}`}
+                className="bg-sun text-ebony font-medium text-sm px-6 py-2.5 rounded-full hover:brightness-95"
+              >
+                Add tenant
+              </Link>
+            )}
+          </div>
+        }
+      />
 
       {activeLease ? (
         <div className="bg-white border border-pearl rounded-md p-5 mb-6 max-w-2xl">
