@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Payment" ADD COLUMN     "note" TEXT,
+ALTER COLUMN "coversFrom" DROP NOT NULL,
+ALTER COLUMN "coversTo" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'LANDLORD';

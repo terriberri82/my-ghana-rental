@@ -166,9 +166,10 @@ model Payment {
   method            PaymentMethod @default(MOBILE_MONEY)
   paystackReference String?       @unique
   status            PaymentStatus @default(PENDING)
-  coversFrom        DateTime
-  coversTo          DateTime
+  coversFrom        DateTime?
+  coversTo          DateTime?
   receiptNumber     String?       @unique
+  note              String?
   paidAt            DateTime?
   createdAt         DateTime      @default(now())
 

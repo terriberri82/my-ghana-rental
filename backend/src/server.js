@@ -6,6 +6,9 @@ import prisma from "./lib/prisma.js";
 import authRoutes from "./routes/authRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import unitRoutes from "./routes/unitRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import leaseRoutes from "./routes/leaseRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 
@@ -30,6 +33,9 @@ app.get("/api/health", async (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/units", unitRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/leases", leaseRoutes);
+app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 5000;
 

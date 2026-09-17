@@ -51,7 +51,26 @@ export const getUnit = async (req, res) => {
   const unit = await prisma.unit.findFirst({
     where: { id: req.params.id, property: { landlordId: req.userId } },
     include: {
-      property: { select: { id: true, name: true } },
+      property: { select: { id: true, name: true, address: true, city: true } },
+      leases: {
+        orderBy: { startDate: "desc" },
+        include: {
+          tenant: {
+            select: { id: true, firstName: true, lastName: true, phone: true },
+          },
+          payments: {
+            orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
+            select: {
+              id: true,
+              amount: true,
+              method: true,
+              status: true,
+              paidAt: true,
+              note: true,
+            },
+          },
+        },
+      },
     },
   });
 
