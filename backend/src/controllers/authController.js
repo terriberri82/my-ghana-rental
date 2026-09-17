@@ -6,7 +6,7 @@ const setAuthCookie = (res, user) => {
   const token = jwt.sign(
     { userId: user.id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" },
+    { expiresIn: "7d" }
   );
 
   const isProduction = process.env.NODE_ENV === "production";
@@ -20,117 +20,147 @@ const setAuthCookie = (res, user) => {
 };
 
 export const signup = async (req, res) => {
-  const { firstName, lastName, phone, password, email } = req.body;
+  try {
+    const { firstName, lastName, phone, password, email } = req.body;
 
-  if (!firstName || !lastName || !phone || !password) {
-    return res.status(400).json({
-      message: "First name, last name, phone and password are required.",
+    if (!firstName || !lastName || !phone || !password) {
+      return res.status(400).json({
+        message: "First name, last name, phone and password are required.",
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Your password needs to be at least 8 characters.",
+      });
+    }
+
+    const existing = await prisma.user.findUnique({ where: { phone } });
+    if (existing) {
+      return res.status(409).json({
+        message:
+          "An account with this phone number already exists. Try logging in instead.",
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        phone,
+        email: email || null,
+        passwordHash,
+        role: "LANDLORD",
+      },
+    });
+
+    setAuthCookie(res, user);
+
+    res.status(201).json({
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("signup:", error);
+    res.status(500).json({
+      message: "Couldn't create your account. Please try again.",
     });
   }
-
-  const existing = await prisma.user.findUnique({ where: { phone } });
-  if (existing) {
-    return res.status(409).json({
-      message:
-        "An account with this phone number already exists. Try logging in instead.",
-    });
-  }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-
-  const user = await prisma.user.create({
-    data: {
-      firstName,
-      lastName,
-      phone,
-      email: email || null,
-      passwordHash,
-      role: "LANDLORD",
-    },
-  });
-
-  setAuthCookie(res, user);
-
-  res.status(201).json({
-    user: {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      role: user.role,
-    },
-  });
 };
 
 export const login = async (req, res) => {
-  const { phone, password } = req.body;
+  try {
+    const { phone, password } = req.body;
 
-  if (!phone || !password) {
-    return res.status(400).json({
-      message: "Phone number and password are required.",
+    if (!phone || !password) {
+      return res.status(400).json({
+        message: "Phone number and password are required.",
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { phone } });
+
+    if (!user) {
+      return res.status(404).json({
+        message:
+          "No account found with this phone number. Sign up to get started.",
+      });
+    }
+
+    if (!user.passwordHash) {
+      return res.status(403).json({
+        message: "This account has not been activated yet.",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Incorrect password. Please try again.",
+      });
+    }
+
+    setAuthCookie(res, user);
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("login:", error);
+    res.status(500).json({
+      message: "Couldn't log you in. Please try again.",
     });
   }
-
-  const user = await prisma.user.findUnique({ where: { phone } });
-
-  if (!user) {
-    return res.status(404).json({
-      message:
-        "No account found with this phone number. Sign up to get started.",
-    });
-  }
-
-  if (!user.passwordHash) {
-    return res.status(403).json({
-      message: "This account has not been activated yet.",
-    });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.passwordHash);
-
-  if (!isMatch) {
-    return res.status(401).json({
-      message: "Incorrect password. Please try again.",
-    });
-  }
-
-  setAuthCookie(res, user);
-
-  res.status(200).json({
-    user: {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      role: user.role,
-    },
-  });
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  });
-  res.status(200).json({ message: "Logged out." });
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    res.status(200).json({ message: "Logged out." });
+  } catch (error) {
+    console.error("logout:", error);
+    res.status(500).json({ message: "Couldn't log you out." });
+  }
 };
 
 export const getMe = async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.userId },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      role: true,
-    },
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+      },
+    });
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found." });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("getMe:", error);
+    res.status(500).json({ message: "Couldn't load your account." });
   }
-
-  res.status(200).json({ user });
 };
