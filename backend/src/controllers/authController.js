@@ -34,10 +34,30 @@ export const signup = async (req, res) => {
         message: "Your password needs to be at least 8 characters.",
       });
     }
-    if (email) {
-      const emailTaken = await prisma.user.findUnique({
-        where: { email: email.toLowerCase().trim() },
+
+    const cleanPhone = phone.replace(/\s/g, "");
+
+    if (!/^0\d{9}$/.test(cleanPhone)) {
+      return res.status(400).json({
+        message: "Enter a valid Ghanaian phone number, like 024 123 4567.",
       });
+    }
+
+    let cleanEmail = null;
+
+    if (email) {
+      cleanEmail = email.toLowerCase().trim();
+
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(cleanEmail)) {
+        return res.status(400).json({
+          message: "That doesn't look like a valid email address.",
+        });
+      }
+
+      const emailTaken = await prisma.user.findUnique({
+        where: { email: cleanEmail },
+      });
+
       if (emailTaken) {
         return res.status(409).json({
           message: "An account with this email already exists.",
@@ -45,7 +65,10 @@ export const signup = async (req, res) => {
       }
     }
 
-    const existing = await prisma.user.findUnique({ where: { phone } });
+    const existing = await prisma.user.findUnique({
+      where: { phone: cleanPhone },
+    });
+
     if (existing) {
       return res.status(409).json({
         message:
@@ -59,8 +82,8 @@ export const signup = async (req, res) => {
       data: {
         firstName,
         lastName,
-        phone,
-        email: email ? email.toLowerCase().trim() : null,
+        phone: cleanPhone,
+        email: cleanEmail,
         passwordHash,
         role: "LANDLORD",
       },
@@ -101,7 +124,7 @@ export const login = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: isEmail
         ? { email: identifier.toLowerCase().trim() }
-        : { phone: identifier.trim() },
+        : { phone: identifier.replace(/\s/g, "") },
     });
 
     if (!user) {
