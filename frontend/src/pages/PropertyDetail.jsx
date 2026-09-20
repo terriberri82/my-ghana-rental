@@ -51,7 +51,7 @@ export default function PropertyDetail() {
   const occupied = units.filter((u) => u.status === "OCCUPIED").length;
 
   return (
-    <>
+    <div>
       <Link
         to="/properties"
         className="text-sm text-ebony/55 hover:text-bayou inline-block mb-4"
@@ -177,17 +177,26 @@ export default function PropertyDetail() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title="Delete this property?"
+        hideDismiss
       >
         <span className="block mb-4">
           This removes {property.name} from your account. It can't be undone.
         </span>
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="bg-brick text-white text-sm font-medium px-6 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50"
-        >
-          {deleting ? "Deleting…" : "Yes, delete it"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="bg-brick text-white text-sm font-medium px-6 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50"
+          >
+            {deleting ? "Deleting…" : "Yes, delete it"}
+          </button>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="text-sm text-ebony/60 hover:text-bayou"
+          >
+            Cancel
+          </button>
+        </div>
       </Modal>
 
       <Modal
@@ -197,6 +206,6 @@ export default function PropertyDetail() {
       >
         {error}
       </Modal>
-    </>
+    </div>
   );
 }

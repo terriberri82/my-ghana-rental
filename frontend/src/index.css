@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bayou: #2C5761;
-  --color-bayou-deep: #1E3D45;
-  --color-sun: #E8B45A;
-  --color-pearl: #D9D2C5;
-  --color-paper: #F1F0EE;
-  --color-ebony: #2B2B2B;
+  --color-bayou: #2c5761;
+  --color-bayou-deep: #1e3d45;
+  --color-sun: #e8b45a;
+  --color-pearl: #d9d2c5;
+  --color-paper: #f1f0ee;
+  --color-ebony: #2b2b2b;
+  --color-brick: #a63a2e;
 
   --font-display: "Space Grotesk", sans-serif;
   --font-sans: "Space Grotesk", sans-serif;

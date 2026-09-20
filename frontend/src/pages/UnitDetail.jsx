@@ -245,18 +245,27 @@ export default function UnitDetail() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title="Delete this unit?"
+        hideDismiss
       >
         <span className="block mb-4">
           This removes unit {unit.unitLabel} from {unit.property.name}. It can't
           be undone.
         </span>
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="bg-brick text-white text-sm font-medium px-6 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50"
-        >
-          {deleting ? "Deleting…" : "Yes, delete it"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="bg-brick text-white text-sm font-medium px-6 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50"
+          >
+            {deleting ? "Deleting…" : "Yes, delete it"}
+          </button>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="text-sm text-ebony/60 hover:text-bayou"
+          >
+            Cancel
+          </button>
+        </div>
       </Modal>
 
       <Modal

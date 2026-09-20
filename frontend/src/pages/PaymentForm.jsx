@@ -16,6 +16,7 @@ const METHODS = [
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
+
 function SendReceipt({ href, label = "Send WhatsApp receipt" }) {
   const Tag = "a";
   return (
@@ -338,18 +339,27 @@ export default function PaymentForm() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title="Delete this payment?"
+        hideDismiss
       >
         <span className="block mb-4">
           This removes the record permanently. Use it for a payment entered by
           mistake.
         </span>
-        <button
-          onClick={handleDelete}
-          disabled={loading}
-          className="bg-brick text-white text-sm font-medium px-6 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50"
-        >
-          {loading ? "Deleting…" : "Yes, delete it"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="bg-brick text-white text-sm font-medium px-6 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50"
+          >
+            {loading ? "Deleting…" : "Yes, delete it"}
+          </button>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="text-sm text-ebony/60 hover:text-bayou"
+          >
+            Cancel
+          </button>
+        </div>
       </Modal>
 
       <Modal
@@ -359,6 +369,7 @@ export default function PaymentForm() {
       >
         {error}
       </Modal>
+
       <Modal
         open={savedPayment}
         onClose={() =>

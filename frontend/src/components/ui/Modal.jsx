@@ -1,6 +1,12 @@
 import { useEffect } from "react";
 
-export default function Modal({ open, onClose, title, children }) {
+export default function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  hideDismiss = false,
+}) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === "Escape") onClose();
@@ -27,13 +33,16 @@ export default function Modal({ open, onClose, title, children }) {
             {title}
           </h2>
         )}
-        <p className="text-sm text-ebony/75 leading-relaxed">{children}</p>
-        <button
-          onClick={onClose}
-          className="mt-6 w-full bg-sun text-ebony font-medium text-sm py-2.5 rounded-full hover:brightness-95"
-        >
-          Got it
-        </button>
+        <div className="text-sm text-ebony/75 leading-relaxed">{children}</div>
+
+        {!hideDismiss && (
+          <button
+            onClick={onClose}
+            className="mt-6 w-full bg-sun text-ebony font-medium text-sm py-2.5 rounded-full hover:brightness-95"
+          >
+            Got it
+          </button>
+        )}
       </div>
     </div>
   );
