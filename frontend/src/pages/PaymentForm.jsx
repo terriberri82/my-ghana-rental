@@ -16,6 +16,19 @@ const METHODS = [
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
+function SendReceipt({ href, label = "Send WhatsApp receipt" }) {
+  const Tag = "a";
+  return (
+    <Tag
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-block border border-bayou text-bayou font-medium text-sm px-6 py-2.5 rounded-full hover:bg-bayou hover:text-paper transition-colors"
+    >
+      {label}
+    </Tag>
+  );
+}
 
 export default function PaymentForm() {
   const navigate = useNavigate();
@@ -35,6 +48,7 @@ export default function PaymentForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [savedPayment, setSavedPayment] = useState(false);
 
   useEffect(() => {
     if (editing || leaseId) return;
@@ -52,6 +66,8 @@ export default function PaymentForm() {
           unitLabel: data.lease.unit.unitLabel,
           propertyName: data.lease.unit.property.name,
           tenantName: `${data.lease.tenant.firstName} ${data.lease.tenant.lastName}`,
+          tenantFirstName: data.lease.tenant.firstName,
+          tenantPhone: data.lease.tenant.phone,
         });
         setForm((f) => ({ ...f, amount: String(data.lease.rentAmount) }));
       })
@@ -68,6 +84,8 @@ export default function PaymentForm() {
           unitLabel: p.lease.unit.unitLabel,
           propertyName: "",
           tenantName: `${p.lease.tenant.firstName} ${p.lease.tenant.lastName}`,
+          tenantFirstName: p.lease.tenant.firstName,
+          tenantPhone: p.lease.tenant.phone,
         });
         setForm({
           amount: String(p.amount),
@@ -93,7 +111,7 @@ export default function PaymentForm() {
         method: editing ? "PATCH" : "POST",
         body: JSON.stringify(editing ? form : { leaseId, ...form }),
       });
-      navigate(context ? `/units/${context.unitId}` : "/payments");
+      setSavedPayment(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -113,6 +131,26 @@ export default function PaymentForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function whatsappLink() {
+    if (!context?.tenantPhone) return null;
+
+    const digits = context.tenantPhone.replace(/\D/g, "").replace(/^0/, "");
+
+    const date = new Date(form.paidAt).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    const text = encodeURIComponent(
+      `Hi ${context.tenantFirstName}, this is to confirm I received GHS ${Number(
+        form.amount,
+      ).toLocaleString()} for unit ${context.unitLabel} on ${date}. Thank you.`,
+    );
+
+    return `https://wa.me/233${digits}?text=${text}`;
   }
 
   const field =
@@ -264,7 +302,7 @@ export default function PaymentForm() {
           />
         </div>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             type="submit"
             disabled={loading}
@@ -272,6 +310,10 @@ export default function PaymentForm() {
           >
             {loading ? "Saving…" : editing ? "Save changes" : "Record payment"}
           </button>
+
+          {editing && whatsappLink() && (
+            <SendReceipt href={whatsappLink()} label="Send receipt" />
+          )}
 
           <Link
             to={context ? `/units/${context.unitId}` : "/payments"}
@@ -316,6 +358,18 @@ export default function PaymentForm() {
         title="Couldn't save"
       >
         {error}
+      </Modal>
+      <Modal
+        open={savedPayment}
+        onClose={() =>
+          navigate(context ? `/units/${context.unitId}` : "/payments")
+        }
+        title={editing ? "Changes saved" : "Payment recorded"}
+      >
+        <span className="block mb-4">
+          Saved. Want to send {context?.tenantFirstName} a receipt on WhatsApp?
+        </span>
+        {whatsappLink() && <SendReceipt href={whatsappLink()} />}
       </Modal>
     </div>
   );

@@ -92,7 +92,9 @@ export const getPayment = async (req, res) => {
         lease: {
           select: {
             id: true,
-            tenant: { select: { firstName: true, lastName: true } },
+            tenant: {
+              select: { firstName: true, lastName: true, phone: true },
+            },
             unit: { select: { id: true, unitLabel: true } },
           },
         },
