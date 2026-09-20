@@ -8,7 +8,7 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ phone: "", password: "" });
+  const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,7 +22,7 @@ function Login() {
 
     setLoading(true);
     try {
-      await login(form.phone, form.password);
+      await login(form.identifier, form.password);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -46,15 +46,15 @@ function Login() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
               <label
-                htmlFor="phone"
+                htmlFor="identifier"
                 className="block text-sm font-medium text-ebony mb-1.5"
               >
-                Phone number
+                Phone number or email
               </label>
               <input
-                id="phone"
-                name="phone"
-                value={form.phone}
+                id="identifier"
+                name="identifier"
+                value={form.identifier}
                 onChange={handleChange}
                 required
                 placeholder="024 123 4567"
@@ -92,10 +92,7 @@ function Login() {
 
           <p className="mt-6 text-sm text-ebony/65">
             No account yet?{" "}
-            <Link
-              to="/signup"
-              className="text-bayou font-medium hover:underline"
-            >
+            <Link to="/signup" className="text-bayou font-medium hover:underline">
               Sign up
             </Link>
           </p>

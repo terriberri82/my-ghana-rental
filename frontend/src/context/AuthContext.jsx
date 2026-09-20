@@ -22,10 +22,10 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-  async function login(phone, password) {
+   async function login(identifier, password) {
     const data = await api("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ phone, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     setUser(data.user);
     return data.user;

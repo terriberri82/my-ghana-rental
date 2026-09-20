@@ -6,7 +6,7 @@ const setAuthCookie = (res, user) => {
   const token = jwt.sign(
     { userId: user.id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
   const isProduction = process.env.NODE_ENV === "production";
@@ -34,6 +34,16 @@ export const signup = async (req, res) => {
         message: "Your password needs to be at least 8 characters.",
       });
     }
+    if (email) {
+      const emailTaken = await prisma.user.findUnique({
+        where: { email: email.toLowerCase().trim() },
+      });
+      if (emailTaken) {
+        return res.status(409).json({
+          message: "An account with this email already exists.",
+        });
+      }
+    }
 
     const existing = await prisma.user.findUnique({ where: { phone } });
     if (existing) {
@@ -50,7 +60,7 @@ export const signup = async (req, res) => {
         firstName,
         lastName,
         phone,
-        email: email || null,
+        email: email ? email.toLowerCase().trim() : null,
         passwordHash,
         role: "LANDLORD",
       },
@@ -63,6 +73,7 @@ export const signup = async (req, res) => {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
+        email: user.email,
         phone: user.phone,
         role: user.role,
       },
@@ -77,20 +88,25 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!phone || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
-        message: "Phone number and password are required.",
+        message: "Phone number or email, and password, are required.",
       });
     }
 
-    const user = await prisma.user.findUnique({ where: { phone } });
+    const isEmail = identifier.includes("@");
+
+    const user = await prisma.user.findUnique({
+      where: isEmail
+        ? { email: identifier.toLowerCase().trim() }
+        : { phone: identifier.trim() },
+    });
 
     if (!user) {
       return res.status(404).json({
-        message:
-          "No account found with this phone number. Sign up to get started.",
+        message: "No account found with that phone number or email.",
       });
     }
 
@@ -115,6 +131,7 @@ export const login = async (req, res) => {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
+        email: user.email,
         phone: user.phone,
         role: user.role,
       },
@@ -149,6 +166,7 @@ export const getMe = async (req, res) => {
         id: true,
         firstName: true,
         lastName: true,
+        email: true,
         phone: true,
         role: true,
       },

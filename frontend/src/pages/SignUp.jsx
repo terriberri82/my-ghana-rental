@@ -11,6 +11,7 @@ function Signup() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    email: "",
     phone: "",
     password: "",
     confirmPassword: "",
@@ -36,6 +37,7 @@ function Signup() {
       await signup({
         firstName: form.firstName,
         lastName: form.lastName,
+        email: form.email,
         phone: form.phone,
         password: form.password,
       });
@@ -126,6 +128,25 @@ function Signup() {
             </div>
 
             <div>
+              <label htmlFor="email" className={label}>
+                Email{" "}
+                <span className="font-normal text-ebony/45">(optional)</span>
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="ama@example.com"
+                className={field}
+              />
+              <p className="mt-1 text-xs text-ebony/50">
+                Add one and you can log in with either your phone or your email.
+              </p>
+            </div>
+
+            <div>
               <label htmlFor="password" className={label}>
                 Password
               </label>
@@ -136,9 +157,13 @@ function Signup() {
                 value={form.password}
                 onChange={handleChange}
                 required
+                minLength={8}
                 placeholder="••••••••"
                 className={field}
               />
+              <p className="mt-1 text-xs text-ebony/50">
+                At least 8 characters.
+              </p>
             </div>
 
             <div>
@@ -168,10 +193,7 @@ function Signup() {
 
           <p className="mt-6 text-sm text-ebony/65">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-bayou font-medium hover:underline"
-            >
+            <Link to="/login" className="text-bayou font-medium hover:underline">
               Log in
             </Link>
           </p>
