@@ -205,3 +205,127 @@ export const getMe = async (req, res) => {
     res.status(500).json({ message: "Couldn't load your account." });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, phone, email } = req.body;
+
+    if (!firstName || !lastName || !phone) {
+      return res.status(400).json({
+        message: "First name, last name and phone number are required.",
+      });
+    }
+
+    const cleanPhone = phone.replace(/\s/g, "");
+
+    if (!/^0\d{9}$/.test(cleanPhone)) {
+      return res.status(400).json({
+        message: "Enter a valid Ghanaian phone number, like 024 123 4567.",
+      });
+    }
+
+    const phoneTaken = await prisma.user.findFirst({
+      where: { phone: cleanPhone, NOT: { id: req.userId } },
+    });
+
+    if (phoneTaken) {
+      return res.status(409).json({
+        message: "That phone number is already in use.",
+      });
+    }
+
+    let cleanEmail = null;
+
+    if (email) {
+      cleanEmail = email.toLowerCase().trim();
+
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(cleanEmail)) {
+        return res.status(400).json({
+          message: "That doesn't look like a valid email address.",
+        });
+      }
+
+      const emailTaken = await prisma.user.findFirst({
+        where: { email: cleanEmail, NOT: { id: req.userId } },
+      });
+
+      if (emailTaken) {
+        return res.status(409).json({
+          message: "That email is already in use.",
+        });
+      }
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        firstName,
+        lastName,
+        phone: cleanPhone,
+        email: cleanEmail,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+      },
+    });
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("updateProfile:", error);
+    res.status(500).json({ message: "Couldn't save your changes." });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Your current password and a new password are required.",
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        message: "Your new password needs to be at least 8 characters.",
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+
+    if (!user || !user.passwordHash) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "That's not your current password.",
+      });
+    }
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        message: "Your new password has to be different from your current one.",
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { passwordHash },
+    });
+
+    res.status(200).json({ message: "Password changed." });
+  } catch (error) {
+    console.error("changePassword:", error);
+    res.status(500).json({ message: "Couldn't change your password." });
+  }
+};

@@ -13,6 +13,7 @@ import UnitDetail from "../pages/UnitDetail";
 import LeaseForm from "../pages/LeaseForm";
 import PaymentForm from "../pages/PaymentForm";
 import Payments from "../pages/Payments";
+import Profile from "../pages/Profile";
 
 export const publicRoutes = [
   { path: "/", element: <Home /> },
@@ -39,4 +40,5 @@ export const authRoutes = [
   { path: "/payments/new", element: <PaymentForm /> },
   { path: "/payments/:id/edit", element: <PaymentForm /> },
   { path: "/payments", element: <Payments /> },
+    { path: "/profile", element: <Profile /> },
 ];

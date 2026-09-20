@@ -16,6 +16,8 @@ function Icon({ name }) {
       "M3 21h18M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2",
     door: "M14 3v18M4 21h16M6 21V5a2 2 0 012-2h8M11 12h.01",
     cash: "M2 7h20v10H2zM12 9.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5M6 10v.01M18 14v.01",
+    person:
+      "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8",
   };
 
   return (
@@ -75,16 +77,26 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-2 md:p-3 border-t border-paper/10">
-        <div className="hidden md:block px-3 py-2">
-          <p className="text-sm text-paper truncate">
+      <div className="p-2 md:p-3 border-t border-paper/10 space-y-1">
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors ${
+              isActive
+                ? "bg-bayou-deep text-paper"
+                : "text-paper/70 hover:text-paper hover:bg-bayou-deep/50"
+            }`
+          }
+        >
+          <Icon name="person" />
+          <span className="hidden md:block truncate">
             {user?.firstName} {user?.lastName}
-          </p>
-          <p className="text-xs text-paper/50 truncate">{user?.phone}</p>
-        </div>
+          </span>
+        </NavLink>
+
         <button
           onClick={handleLogout}
-          className="w-full text-left px-3 py-2 text-sm text-paper/60 hover:text-paper rounded-sm hover:bg-bayou-deep/50"
+          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-paper/60 hover:text-paper rounded-sm hover:bg-bayou-deep/50"
         >
           <span className="hidden md:inline">Log out</span>
           <span className="md:hidden">→</span>

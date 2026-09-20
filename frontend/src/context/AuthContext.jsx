@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-   async function login(identifier, password) {
+  async function login(identifier, password) {
     const data = await api("/auth/login", {
       method: "POST",
       body: JSON.stringify({ identifier, password }),
@@ -39,6 +39,9 @@ export function AuthProvider({ children }) {
     setUser(data.user);
     return data.user;
   }
+  function updateUser(nextUser) {
+    setUser(nextUser);
+  }
 
   async function logout() {
     try {
@@ -52,7 +55,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn, checkingSession, login, signup, logout }}
+      value={{ user, isLoggedIn, checkingSession, login, signup, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>
