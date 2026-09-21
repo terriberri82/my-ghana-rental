@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
+import PropertyGallery from "../components/PropertyGallery";
 
 const pretty = (v) =>
   v
@@ -86,6 +87,12 @@ export default function PropertyDetail() {
             </Link>
           </div>
         }
+      />
+
+      <PropertyGallery
+        images={property.images}
+        name={property.name}
+        type={property.propertyType}
       />
 
       <div className="flex flex-wrap gap-6 mb-8 text-sm">

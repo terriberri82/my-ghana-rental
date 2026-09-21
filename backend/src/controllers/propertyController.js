@@ -1,13 +1,80 @@
+import { Region, PropertyType } from "@prisma/client";
 import prisma from "../lib/prisma.js";
+
+const MAX_IMAGES = 10;
+const VALID_REGIONS = Object.values(Region);
+const VALID_PROPERTY_TYPES = Object.values(PropertyType);
+
+// Checks the images list sent from the frontend.
+// Returns an error message, or null if everything is fine.
+const validateImages = (images) => {
+  if (!Array.isArray(images)) {
+    return "Images must be a list.";
+  }
+
+  if (images.length > MAX_IMAGES) {
+    return `You can add up to ${MAX_IMAGES} photos per property.`;
+  }
+
+  const allValid = images.every(
+    (img) =>
+      img &&
+      typeof img.url === "string" &&
+      img.url.trim() !== "" &&
+      typeof img.publicId === "string" &&
+      img.publicId.trim() !== "",
+  );
+
+  if (!allValid) {
+    return "Each photo needs a url and a publicId.";
+  }
+
+  return null;
+};
+
+// Checks region and property type against the Prisma enums.
+// Only checks a field if it was sent, so updates can leave them out.
+const validateEnums = ({ region, propertyType }) => {
+  if (region !== undefined && !VALID_REGIONS.includes(region)) {
+    return "Please choose a valid region.";
+  }
+
+  if (
+    propertyType !== undefined &&
+    !VALID_PROPERTY_TYPES.includes(propertyType)
+  ) {
+    return "Please choose a valid property type.";
+  }
+
+  return null;
+};
 
 export const createProperty = async (req, res) => {
   try {
-    const { name, address, city, region, propertyType, description } = req.body;
+    const {
+      name,
+      address,
+      city,
+      region,
+      propertyType,
+      description,
+      images = [],
+    } = req.body;
 
     if (!name || !address || !city || !region || !propertyType) {
       return res.status(400).json({
         message: "Name, address, city, region and property type are required.",
       });
+    }
+
+    const enumError = validateEnums({ region, propertyType });
+    if (enumError) {
+      return res.status(400).json({ message: enumError });
+    }
+
+    const imageError = validateImages(images);
+    if (imageError) {
+      return res.status(400).json({ message: imageError });
     }
 
     const property = await prisma.property.create({
@@ -19,6 +86,16 @@ export const createProperty = async (req, res) => {
         propertyType,
         description: description || null,
         landlordId: req.userId,
+        images: {
+          create: images.map((img, index) => ({
+            url: img.url,
+            publicId: img.publicId,
+            position: index,
+          })),
+        },
+      },
+      include: {
+        images: { orderBy: { position: "asc" } },
       },
     });
 
@@ -37,6 +114,7 @@ export const getProperties = async (req, res) => {
       where: { landlordId: req.userId },
       include: {
         _count: { select: { units: true } },
+        images: { orderBy: { position: "asc" }, take: 1 },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -54,6 +132,7 @@ export const getProperty = async (req, res) => {
       where: { id: req.params.id, landlordId: req.userId },
       include: {
         units: { orderBy: { unitLabel: "asc" } },
+        images: { orderBy: { position: "asc" } },
       },
     });
 
@@ -72,6 +151,11 @@ export const updateProperty = async (req, res) => {
   try {
     const { name, address, city, region, propertyType, description } = req.body;
 
+    const enumError = validateEnums({ region, propertyType });
+    if (enumError) {
+      return res.status(400).json({ message: enumError });
+    }
+
     const existing = await prisma.property.findFirst({
       where: { id: req.params.id, landlordId: req.userId },
     });
@@ -83,6 +167,9 @@ export const updateProperty = async (req, res) => {
     const property = await prisma.property.update({
       where: { id: req.params.id },
       data: { name, address, city, region, propertyType, description },
+      include: {
+        images: { orderBy: { position: "asc" } },
+      },
     });
 
     res.status(200).json({ property });

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
+import PropertyPlaceholder from "../components/PropertyPlaceholder";
+import { cloudinaryThumb } from "../utils/cloudinaryUrl";
 
 const pretty = (v) =>
   v
@@ -63,33 +65,53 @@ export default function Properties() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {properties.map((p) => (
-            <Link
-              key={p.id}
-              to={`/properties/${p.id}`}
-              className="bg-white border border-pearl rounded-md p-5 hover:border-bayou transition-colors"
-            >
-              <span className="inline-block text-[10px] tracking-wide text-ebony/50 bg-paper px-2 py-1 rounded-sm">
-                {pretty(p.propertyType)}
-              </span>
+          {properties.map((p) => {
+            const cover = p.images?.[0];
 
-              <h2 className="font-display text-lg font-semibold text-bayou mt-3">
-                {p.name}
-              </h2>
-              <p className="text-sm text-ebony/60 mt-0.5">
-                {p.address}, {p.city}
-              </p>
+            return (
+              <Link
+                key={p.id}
+                to={`/properties/${p.id}`}
+                className="bg-white border border-pearl rounded-md overflow-hidden hover:border-bayou transition-colors"
+              >
+                {cover ? (
+                  <img
+                    src={cloudinaryThumb(cover.url)}
+                    alt={p.name}
+                    loading="lazy"
+                    className="aspect-[3/2] w-full object-cover"
+                  />
+                ) : (
+                  <PropertyPlaceholder
+                    type={p.propertyType}
+                    className="aspect-[3/2] w-full"
+                  />
+                )}
 
-              <div className="mt-5 pt-4 border-t border-paper text-sm">
-                <span className="font-medium tabular-nums text-ebony">
-                  {p._count.units}
-                </span>{" "}
-                <span className="text-ebony/55">
-                  {p._count.units === 1 ? "unit" : "units"}
-                </span>
-              </div>
-            </Link>
-          ))}
+                <div className="p-5">
+                  <span className="inline-block text-[10px] tracking-wide text-ebony/50 bg-paper px-2 py-1 rounded-sm">
+                    {pretty(p.propertyType)}
+                  </span>
+
+                  <h2 className="font-display text-lg font-semibold text-bayou mt-3">
+                    {p.name}
+                  </h2>
+                  <p className="text-sm text-ebony/60 mt-0.5">
+                    {p.address}, {p.city}
+                  </p>
+
+                  <div className="mt-5 pt-4 border-t border-paper text-sm">
+                    <span className="font-medium tabular-nums text-ebony">
+                      {p._count.units}
+                    </span>{" "}
+                    <span className="text-ebony/55">
+                      {p._count.units === 1 ? "unit" : "units"}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </>

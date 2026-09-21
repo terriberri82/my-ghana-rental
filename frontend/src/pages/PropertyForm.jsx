@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
+import PhotoUploader from "../components/PhotoUploader";
 
 const REGIONS = [
   "GREATER_ACCRA", "ASHANTI", "WESTERN", "WESTERN_NORTH", "CENTRAL",
@@ -30,6 +31,8 @@ export default function PropertyForm() {
     propertyType: "COMPOUND_HOUSE",
     description: "",
   });
+  const [images, setImages] = useState([]);
+  const [photosUploading, setPhotosUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -55,13 +58,15 @@ export default function PropertyForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (loading) return;
+    if (loading || photosUploading) return;
 
     setLoading(true);
     try {
+      const body = editing ? form : { ...form, images };
+
       const data = await api(editing ? `/properties/${id}` : "/properties", {
         method: editing ? "PATCH" : "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
       navigate(`/properties/${data.property.id}`);
     } catch (err) {
@@ -186,14 +191,24 @@ export default function PropertyForm() {
           />
         </div>
 
+        {!editing && (
+          <PhotoUploader
+            images={images}
+            onChange={setImages}
+            onUploadingChange={setPhotosUploading}
+          />
+        )}
+
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || photosUploading}
             className="bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading
               ? "Saving…"
+              : photosUploading
+              ? "Uploading photos…"
               : editing
               ? "Save changes"
               : "Add property"}

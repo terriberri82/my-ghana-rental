@@ -116,6 +116,19 @@ model Property {
 
   landlord User   @relation(fields: [landlordId], references: [id], onDelete: Cascade)
   units    Unit[]
+  images    PropertyImage[]
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid())
+  url        String
+  publicId   String
+  position   Int      @default(0)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
 }
 
 model Unit {
