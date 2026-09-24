@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
+import DocumentUploader from "../components/DocumentUploader";
 
 const METHODS = {
   MOBILE_MONEY: "MoMo",
@@ -34,6 +35,45 @@ function WhatsAppLink({ phone, className }) {
   );
 }
 
+// Shows the saved agreement, or the uploader if there isn't one.
+// Saves straight to the lease as soon as a file finishes uploading.
+function LeaseAgreement({ lease, onSaved }) {
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function save(url) {
+    setSaving(true);
+    setError("");
+    try {
+      const data = await api(`/leases/${lease.id}/agreement`, {
+        method: "PATCH",
+        body: JSON.stringify({ agreementUrl: url }),
+      });
+      onSaved(data.lease.agreementUrl);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-5 pt-4 border-t border-paper">
+      <DocumentUploader
+        value={lease.agreementUrl || ""}
+        onChange={save}
+        onUploadingChange={setUploading}
+      />
+
+      {(saving || uploading) && (
+        <p className="mt-1.5 text-xs text-ebony/50">Saving…</p>
+      )}
+      {error && <p className="mt-1.5 text-sm text-brick">{error}</p>}
+    </div>
+  );
+}
+
 export default function UnitDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -48,6 +88,17 @@ export default function UnitDetail() {
       .then((data) => setUnit(data.unit))
       .catch((err) => setError(err.message));
   }, [id]);
+
+  // Keeps the page in sync after the agreement is saved or removed,
+  // without reloading the whole unit.
+  function handleAgreementSaved(leaseId, agreementUrl) {
+    setUnit((prev) => ({
+      ...prev,
+      leases: prev.leases.map((l) =>
+        l.id === leaseId ? { ...l, agreementUrl } : l,
+      ),
+    }));
+  }
 
   async function handleDelete() {
     if (deleting) return;
@@ -167,6 +218,11 @@ export default function UnitDetail() {
               </p>
             </div>
           </div>
+
+          <LeaseAgreement
+            lease={activeLease}
+            onSaved={(url) => handleAgreementSaved(activeLease.id, url)}
+          />
         </div>
       ) : (
         <div className="border border-dashed border-pearl rounded-md p-8 mb-6 max-w-2xl bg-white">

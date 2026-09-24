@@ -8,6 +8,7 @@ import {
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
+import DocumentUploader from "../components/DocumentUploader";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -43,6 +44,8 @@ export default function LeaseForm() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [agreementUrl, setAgreementUrl] = useState("");
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   useEffect(() => {
     if (unitIdFromUrl) return;
@@ -68,13 +71,13 @@ export default function LeaseForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (loading || !unitId) return;
+    if (loading || uploadingDoc || !unitId) return;
 
     setLoading(true);
     try {
       await api("/leases", {
         method: "POST",
-        body: JSON.stringify({ unitId, ...form }),
+        body: JSON.stringify({ unitId, ...form, agreementUrl }),
       });
 
       if (fromOnboarding) {
@@ -295,13 +298,19 @@ export default function LeaseForm() {
           </div>
         </div>
 
+        <DocumentUploader
+          value={agreementUrl}
+          onChange={setAgreementUrl}
+          onUploadingChange={setUploadingDoc}
+        />
+
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={loading || !unitId}
+            disabled={loading || uploadingDoc || !unitId}
             className="bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Saving…" : "Add tenant"}
+            {loading ? "Saving…" : uploadingDoc ? "Uploading…" : "Add tenant"}
           </button>
 
           <Link

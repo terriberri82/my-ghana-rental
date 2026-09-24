@@ -14,9 +14,17 @@ export const createLease = async (req, res) => {
       rentAmount,
       advanceMonths,
       depositAmount,
+      agreementUrl,
     } = req.body;
 
-    if (!unitId || !firstName || !lastName || !phone || !startDate || !endDate) {
+    if (
+      !unitId ||
+      !firstName ||
+      !lastName ||
+      !phone ||
+      !startDate ||
+      !endDate
+    ) {
       return res.status(400).json({
         message:
           "Unit, tenant name, phone number, start date and end date are required.",
@@ -29,9 +37,21 @@ export const createLease = async (req, res) => {
       });
     }
 
+    if (
+      agreementUrl &&
+      !/^https:\/\/res\.cloudinary\.com\//.test(agreementUrl)
+    ) {
+      return res.status(400).json({
+        message:
+          "The agreement link doesn't look right. Please upload it again.",
+      });
+    }
+
     const unit = await prisma.unit.findFirst({
       where: { id: unitId, ...ownedUnit(req.userId) },
-      include: { leases: { where: { status: "ACTIVE" }, select: { id: true } } },
+      include: {
+        leases: { where: { status: "ACTIVE" }, select: { id: true } },
+      },
     });
 
     if (!unit) {
@@ -69,6 +89,7 @@ export const createLease = async (req, res) => {
           rentAmount: rentAmount || unit.rentAmount,
           advanceMonths: Number(advanceMonths) || 0,
           depositAmount: depositAmount || 0,
+          agreementUrl: agreementUrl || null,
         },
       });
 
@@ -115,6 +136,36 @@ export const getLease = async (req, res) => {
   } catch (error) {
     console.error("getLease:", error);
     res.status(500).json({ message: "Couldn't load the lease." });
+  }
+};
+
+export const updateLeaseAgreement = async (req, res) => {
+  try {
+    const { agreementUrl } = req.body;
+
+    if (agreementUrl && !/^https:\/\/res\.cloudinary\.com\//.test(agreementUrl)) {
+      return res.status(400).json({
+        message: "The agreement link doesn't look right. Please upload it again.",
+      });
+    }
+
+    const lease = await prisma.lease.findFirst({
+      where: { id: req.params.id, unit: ownedUnit(req.userId) },
+    });
+
+    if (!lease) {
+      return res.status(404).json({ message: "Lease not found." });
+    }
+
+    const updated = await prisma.lease.update({
+      where: { id: lease.id },
+      data: { agreementUrl: agreementUrl || null },
+    });
+
+    res.status(200).json({ lease: updated });
+  } catch (error) {
+    console.error("updateLeaseAgreement:", error);
+    res.status(500).json({ message: "Couldn't save the agreement." });
   }
 };
 
