@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageHeader from "../components/app/PageHeader";
+import SetupChecklist from "../components/SetupChecklist";
 
 function StatCard({ label, value, children, dark }) {
   return (
@@ -50,7 +51,7 @@ function MonthBars({ months }) {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -59,6 +60,17 @@ export default function Dashboard() {
       .then(setData)
       .catch((err) => setError(err.message));
   }, []);
+
+  async function handleDismissOnboarding() {
+    const previousUser = user;
+    updateUser({ ...user, onboardingDismissed: true });
+
+    try {
+      await api("/users/me/onboarding", { method: "PATCH" });
+    } catch {
+      updateUser(previousUser);
+    }
+  }
 
   if (error) {
     return (
@@ -91,21 +103,31 @@ export default function Dashboard() {
           title={`Hello, ${user?.firstName}`}
           subtitle="Let's get your first property set up."
         />
-        <div className="border border-dashed border-pearl rounded-md p-12 text-center bg-white">
-          <h2 className="font-display text-xl font-semibold text-bayou">
-            Add your first property
-          </h2>
-          <p className="mt-2 text-sm text-ebony/65 max-w-sm mx-auto leading-relaxed">
-            Start with a building. Once it's in, you can add the units inside it
-            and put tenants in them.
-          </p>
-          <Link
-            to="/properties/new"
-            className="inline-block mt-6 bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95"
-          >
-            Add property
-          </Link>
-        </div>
+        {!user?.onboardingDismissed ? (
+          <SetupChecklist
+            dismissed={false}
+            onDismiss={handleDismissOnboarding}
+            propertyCount={propertyCount}
+            unitCount={unitCount}
+            leaseCount={occupiedCount}
+          />
+        ) : (
+          <div className="border border-dashed border-pearl rounded-md p-12 text-center bg-white">
+            <h2 className="font-display text-xl font-semibold text-bayou">
+              Add your first property
+            </h2>
+            <p className="mt-2 text-sm text-ebony/65 max-w-sm mx-auto leading-relaxed">
+              Start with a building. Once it's in, you can add the units inside
+              it and put tenants in them.
+            </p>
+            <Link
+              to="/properties/new"
+              className="inline-block mt-6 bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95"
+            >
+              Add property
+            </Link>
+          </div>
+        )}
       </>
     );
   }
@@ -123,6 +145,13 @@ export default function Dashboard() {
             Record payment
           </Link>
         }
+      />
+      <SetupChecklist
+        dismissed={user?.onboardingDismissed}
+        onDismiss={handleDismissOnboarding}
+        propertyCount={propertyCount}
+        unitCount={unitCount}
+        leaseCount={occupiedCount}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

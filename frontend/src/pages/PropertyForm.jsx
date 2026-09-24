@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
@@ -22,6 +22,9 @@ export default function PropertyForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const editing = Boolean(id);
+
+  const location = useLocation();
+  const fromOnboarding = location.state?.fromOnboarding;
 
   const [form, setForm] = useState({
     name: "",
@@ -68,7 +71,12 @@ export default function PropertyForm() {
         method: editing ? "PATCH" : "POST",
         body: JSON.stringify(body),
       });
-      navigate(`/properties/${data.property.id}`);
+
+      if (fromOnboarding && !editing) {
+        navigate("/dashboard");
+      } else {
+        navigate(`/properties/${data.property.id}`);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -215,7 +223,13 @@ export default function PropertyForm() {
           </button>
 
           <Link
-            to={editing ? `/properties/${id}` : "/properties"}
+            to={
+              fromOnboarding
+                ? "/dashboard"
+                : editing
+                ? `/properties/${id}`
+                : "/properties"
+            }
             className="text-sm text-ebony/60 hover:text-bayou"
           >
             Cancel

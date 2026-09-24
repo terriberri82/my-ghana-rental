@@ -3,6 +3,7 @@ import {
   useNavigate,
   useParams,
   useSearchParams,
+  useLocation,
   Link,
 } from "react-router-dom";
 import { api } from "../lib/api";
@@ -15,7 +16,11 @@ export default function UnitForm() {
   const [searchParams] = useSearchParams();
   const editing = Boolean(id);
 
+  const location = useLocation();
+  const fromOnboarding = location.state?.fromOnboarding;
+
   const [properties, setProperties] = useState([]);
+  const [loadingProperties, setLoadingProperties] = useState(true);
   const [form, setForm] = useState({
     propertyId: searchParams.get("propertyId") || "",
     unitLabel: "",
@@ -36,7 +41,8 @@ export default function UnitForm() {
             : { ...f, propertyId: data.properties[0].id },
         );
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message))
+      .finally(() => setLoadingProperties(false));
   }, []);
 
   useEffect(() => {
@@ -68,7 +74,12 @@ export default function UnitForm() {
         method: editing ? "PATCH" : "POST",
         body: JSON.stringify(form),
       });
-      navigate(`/units/${data.unit.id}`);
+
+      if (fromOnboarding && !editing) {
+        navigate("/dashboard");
+      } else {
+        navigate(`/units/${data.unit.id}`);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -80,6 +91,10 @@ export default function UnitForm() {
     "w-full px-4 py-2.5 rounded-sm bg-white border border-pearl text-ebony placeholder:text-ebony/35 focus:outline-none focus:border-bayou focus:ring-1 focus:ring-bayou";
   const label = "block text-sm font-medium text-ebony mb-1.5";
 
+  if (loadingProperties) {
+    return <p className="text-sm text-ebony/50">Loading…</p>;
+  }
+
   if (!editing && properties.length === 0 && !error) {
     return (
       <>
@@ -90,6 +105,7 @@ export default function UnitForm() {
           </p>
           <Link
             to="/properties/new"
+            state={{ fromOnboarding }}
             className="inline-block mt-5 bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95"
           >
             Add property first
@@ -135,7 +151,7 @@ export default function UnitForm() {
 
         <div>
           <label htmlFor="unitLabel" className={label}>
-            Unit label
+            Unit number or name <span className="text-brick">*</span>
           </label>
           <input
             id="unitLabel"
@@ -187,7 +203,7 @@ export default function UnitForm() {
 
         <div>
           <label htmlFor="rentAmount" className={label}>
-            Monthly rent (GHS)
+            Monthly rent (GHS) <span className="text-brick">*</span>
           </label>
           <input
             id="rentAmount"
@@ -217,7 +233,13 @@ export default function UnitForm() {
           </button>
 
           <Link
-            to={editing ? `/units/${id}` : `/properties/${form.propertyId}`}
+            to={
+              fromOnboarding
+                ? "/dashboard"
+                : editing
+                  ? `/units/${id}`
+                  : `/properties/${form.propertyId}`
+            }
             className="text-sm text-ebony/60 hover:text-bayou"
           >
             Cancel

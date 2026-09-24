@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import {
+  useNavigate,
+  useSearchParams,
+  useLocation,
+  Link,
+} from "react-router-dom";
 import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
@@ -15,8 +20,16 @@ const oneYearOn = () => {
 export default function LeaseForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const unitId = searchParams.get("unitId");
+  const unitIdFromUrl = searchParams.get("unitId");
 
+  const location = useLocation();
+  const fromOnboarding = location.state?.fromOnboarding;
+
+  const [pickedUnitId, setPickedUnitId] = useState("");
+  const unitId = unitIdFromUrl || pickedUnitId;
+
+  const [units, setUnits] = useState([]);
+  const [loadingUnits, setLoadingUnits] = useState(!unitIdFromUrl);
   const [unit, setUnit] = useState(null);
   const [form, setForm] = useState({
     firstName: "",
@@ -30,6 +43,14 @@ export default function LeaseForm() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (unitIdFromUrl) return;
+    api("/units")
+      .then((data) => setUnits(data.units))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoadingUnits(false));
+  }, [unitIdFromUrl]);
 
   useEffect(() => {
     if (!unitId) return;
@@ -47,7 +68,7 @@ export default function LeaseForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (loading) return;
+    if (loading || !unitId) return;
 
     setLoading(true);
     try {
@@ -55,7 +76,12 @@ export default function LeaseForm() {
         method: "POST",
         body: JSON.stringify({ unitId, ...form }),
       });
-      navigate(`/units/${unitId}`);
+
+      if (fromOnboarding) {
+        navigate("/dashboard");
+      } else {
+        navigate(`/units/${unitId}`);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -67,14 +93,26 @@ export default function LeaseForm() {
     "w-full px-4 py-2.5 rounded-sm bg-white border border-pearl text-ebony placeholder:text-ebony/35 focus:outline-none focus:border-bayou focus:ring-1 focus:ring-bayou";
   const label = "block text-sm font-medium text-ebony mb-1.5";
 
-  if (!unitId) {
+  if (loadingUnits) {
+    return <p className="text-sm text-ebony/50">Loading…</p>;
+  }
+
+  if (!unitIdFromUrl && units.length === 0 && !error) {
     return (
       <div>
         <PageHeader title="Add a tenant" />
-        <p className="text-sm text-ebony/65">
-          Open the unit you want to add a tenant to, then use the Add tenant
-          button there.
-        </p>
+        <div className="border border-dashed border-pearl rounded-md p-10 text-center bg-white max-w-xl">
+          <p className="text-sm text-ebony/65 leading-relaxed">
+            You need a unit before you can add a tenant to it.
+          </p>
+          <Link
+            to="/units/new"
+            state={{ fromOnboarding }}
+            className="inline-block mt-5 bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95"
+          >
+            Add unit first
+          </Link>
+        </div>
       </div>
     );
   }
@@ -86,11 +124,38 @@ export default function LeaseForm() {
         subtitle={
           unit
             ? `Unit ${unit.unitLabel} · ${unit.property.name}`
-            : "Loading unit…"
+            : unitId
+              ? "Loading unit…"
+              : "Pick the unit they're renting."
         }
       />
 
       <form onSubmit={handleSubmit} className="max-w-xl space-y-4">
+        {!unitIdFromUrl && (
+          <div>
+            <label htmlFor="unitId" className={label}>
+              Unit
+            </label>
+            <select
+              id="unitId"
+              value={pickedUnitId}
+              onChange={(e) => {
+                setUnit(null);
+                setPickedUnitId(e.target.value);
+              }}
+              required
+              className={field}
+            >
+              <option value="">Choose a unit</option>
+              {units.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.unitLabel} · {u.property?.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label htmlFor="firstName" className={label}>
@@ -233,14 +298,20 @@ export default function LeaseForm() {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !unitId}
             className="bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Saving…" : "Add tenant"}
           </button>
 
           <Link
-            to={`/units/${unitId}`}
+            to={
+              fromOnboarding
+                ? "/dashboard"
+                : unitIdFromUrl
+                  ? `/units/${unitIdFromUrl}`
+                  : "/units"
+            }
             className="text-sm text-ebony/60 hover:text-bayou"
           >
             Cancel
