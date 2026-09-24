@@ -9,6 +9,7 @@ import unitRoutes from "./routes/unitRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import leaseRoutes from "./routes/leaseRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/units", unitRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/leases", leaseRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 

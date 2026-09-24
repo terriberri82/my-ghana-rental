@@ -101,6 +101,7 @@ model User {
   recordedPayments    Payment[]            @relation("PaymentRecorder")
   maintenanceRequests MaintenanceRequest[]
   conditionReports    ConditionReport[]
+  onboardingDismissed Boolean @default(false)
 }
 
 model Property {
