@@ -4,6 +4,8 @@ import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
 import DocumentUploader from "../components/DocumentUploader";
+import EditTenantModal from "../components/EditTenantModal";
+import PastLeases from "../components/PastLeases";
 
 const METHODS = {
   MOBILE_MONEY: "MoMo",
@@ -82,6 +84,7 @@ export default function UnitDetail() {
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editingTenant, setEditingTenant] = useState(false);
 
   useEffect(() => {
     api(`/units/${id}`)
@@ -98,6 +101,20 @@ export default function UnitDetail() {
         l.id === leaseId ? { ...l, agreementUrl } : l,
       ),
     }));
+  }
+
+  function handleTenantSaved(tenant) {
+    setUnit((prev) => ({
+      ...prev,
+      leases: prev.leases.map((l) =>
+        l.tenant.id === tenant.id ? { ...l, tenant } : l,
+      ),
+    }));
+  }
+  function handleTenantDeleted() {
+    api(`/units/${id}`)
+      .then((data) => setUnit(data.unit))
+      .catch((err) => setError(err.message));
   }
 
   async function handleDelete() {
@@ -124,6 +141,7 @@ export default function UnitDetail() {
 
   const leases = unit.leases || [];
   const activeLease = leases.find((l) => l.status === "ACTIVE") || null;
+  const pastLeases = leases.filter((l) => l.status !== "ACTIVE");
   const payments = activeLease ? activeLease.payments : [];
 
   const totalRecorded = payments
@@ -183,9 +201,18 @@ export default function UnitDetail() {
 
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <div>
-              <p className="font-display text-lg font-semibold text-bayou">
-                {activeLease.tenant.firstName} {activeLease.tenant.lastName}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-display text-lg font-semibold text-bayou">
+                  {activeLease.tenant.firstName} {activeLease.tenant.lastName}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setEditingTenant(true)}
+                  className="text-xs text-ebony/45 hover:text-bayou"
+                >
+                  Edit
+                </button>
+              </div>
               <WhatsAppLink
                 phone={activeLease.tenant.phone}
                 className="text-sm text-ebony/60 hover:text-bayou"
@@ -295,6 +322,17 @@ export default function UnitDetail() {
             </div>
           ))}
         </div>
+      )}
+      <PastLeases leases={pastLeases} />
+      {activeLease && editingTenant && (
+        <EditTenantModal
+          key={activeLease.tenant.id}
+          tenant={activeLease.tenant}
+          open={editingTenant}
+          onClose={() => setEditingTenant(false)}
+          onSaved={handleTenantSaved}
+          onDeleted={handleTenantDeleted}
+        />
       )}
 
       <Modal
