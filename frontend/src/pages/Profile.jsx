@@ -3,6 +3,7 @@ import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
+import AvatarPicker from "../components/AvatarPicker";
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
@@ -12,6 +13,8 @@ export default function Profile() {
     lastName: "",
     phone: "",
     email: "",
+    avatarUrl: null,
+    avatarPublicId: null,
   });
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -21,6 +24,7 @@ export default function Profile() {
 
   const [savingDetails, setSavingDetails] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -31,6 +35,8 @@ export default function Profile() {
       lastName: user.lastName || "",
       phone: user.phone || "",
       email: user.email || "",
+      avatarUrl: user.avatarUrl || null,
+      avatarPublicId: user.avatarPublicId || null,
     });
   }, [user]);
 
@@ -38,13 +44,13 @@ export default function Profile() {
     setDetails({ ...details, [e.target.name]: e.target.value });
   }
 
-  function handlePasswords(e) {
-    setPasswords({ ...passwords, [e.target.name]: e.target.value });
+  function handleAvatar({ avatarUrl, avatarPublicId }) {
+    setDetails((prev) => ({ ...prev, avatarUrl, avatarPublicId }));
   }
 
   async function saveDetails(e) {
     e.preventDefault();
-    if (savingDetails) return;
+    if (savingDetails || avatarUploading) return;
 
     setSavingDetails(true);
     try {
@@ -92,6 +98,10 @@ export default function Profile() {
     }
   }
 
+  function handlePasswords(e) {
+    setPasswords({ ...passwords, [e.target.name]: e.target.value });
+  }
+
   const field =
     "w-full px-4 py-2.5 rounded-sm bg-white border border-pearl text-ebony placeholder:text-ebony/35 focus:outline-none focus:border-bayou focus:ring-1 focus:ring-bayou";
   const label = "block text-sm font-medium text-ebony mb-1.5";
@@ -108,6 +118,12 @@ export default function Profile() {
           <h2 className="font-display text-lg font-semibold text-bayou">
             Your details
           </h2>
+
+          <AvatarPicker
+            value={details.avatarUrl}
+            onChange={handleAvatar}
+            onUploadingChange={setAvatarUploading}
+          />
 
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
@@ -174,10 +190,14 @@ export default function Profile() {
 
           <button
             type="submit"
-            disabled={savingDetails}
+            disabled={savingDetails || avatarUploading}
             className="bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {savingDetails ? "Saving…" : "Save details"}
+            {savingDetails
+              ? "Saving…"
+              : avatarUploading
+                ? "Uploading photo…"
+                : "Save details"}
           </button>
         </form>
 

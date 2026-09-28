@@ -1,5 +1,6 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
 import logo from "../../assets/logo.png";
 
 const links = [
@@ -88,7 +89,15 @@ export default function Sidebar() {
             }`
           }
         >
-          <Icon name="person" />
+          {user?.avatarUrl ? (
+            <img
+              src={cloudinaryThumb(user.avatarUrl)}
+              alt=""
+              className="w-5 h-5 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <Icon name="person" />
+          )}
           <span className="hidden md:block truncate">
             {user?.firstName} {user?.lastName}
           </span>
