@@ -54,7 +54,7 @@ function Home() {
     <div>
       {/* Hero */}
       <section className="relative bg-paper overflow-hidden">
-        <div className="grid md:grid-cols-12 items-center max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-12 items-center max-w-7xl mx-auto md:min-h-[calc(100vh-100px)]">
           <div className="md:col-span-5 px-6 md:pl-14 md:pr-6 pt-16 pb-12 md:py-12">
             <h1>
               <span className="block text-sm font-medium text-bayou/70 tracking-wide mb-4">
@@ -81,7 +81,7 @@ function Home() {
             </p>
           </div>
 
-          <div className="md:col-span-7 px-6 md:pl-0 md:pr-14 pb-16 md:py-6">
+          <div className="md:col-span-7 px-6 md:pl-0 md:pr-14 pb-16 md:py-2">
             <HeroVisual />
           </div>
         </div>
@@ -103,34 +103,19 @@ function Home() {
             {features.map(({ icon: Icon, title, text }) => (
               <div key={title} className="bg-white rounded-2xl p-6 flex gap-4">
                 <span className="shrink-0 w-11 h-11 rounded-full bg-sun flex items-center justify-center">
-                  <Icon
-                    size={20}
-                    strokeWidth={2}
-                    className="text-bayou"
-                    aria-hidden="true"
-                  />
+                  <Icon size={20} strokeWidth={2} className="text-bayou" aria-hidden="true" />
                 </span>
                 <div>
-                  <h3 className="font-display font-semibold text-bayou">
-                    {title}
-                  </h3>
-                  <p className="mt-2 text-sm text-ebony/65 leading-relaxed">
-                    {text}
-                  </p>
+                  <h3 className="font-display font-semibold text-bayou">{title}</h3>
+                  <p className="mt-2 text-sm text-ebony/65 leading-relaxed">{text}</p>
                 </div>
               </div>
             ))}
 
             {/* Advance rent: the Ghana-specific feature, full width */}
-            {/* Advance rent: the Ghana-specific feature, full width */}
             <div className="md:col-span-2 bg-white rounded-2xl p-6 flex gap-4">
               <span className="shrink-0 w-11 h-11 rounded-full bg-sun flex items-center justify-center">
-                <CalendarClock
-                  size={20}
-                  strokeWidth={2}
-                  className="text-bayou"
-                  aria-hidden="true"
-                />
+                <CalendarClock size={20} strokeWidth={2} className="text-bayou" aria-hidden="true" />
               </span>
               <div>
                 <h3 className="font-display font-semibold text-bayou">
@@ -148,28 +133,18 @@ function Home() {
       </section>
 
       {/* How it works */}
-      <section
-        id="how-it-works"
-        className="scroll-mt-24 max-w-5xl mx-auto px-6 py-24"
-      >
+      <section id="how-it-works" className="scroll-mt-24 max-w-5xl mx-auto px-6 py-24">
         <h2 className="font-display text-3xl md:text-4xl font-semibold text-bayou text-center text-balance">
           How it works
         </h2>
         <ol className="mt-12 grid md:grid-cols-3 gap-8">
           {steps.map((step, i) => (
-            <li
-              key={step.title}
-              className="flex flex-col items-center text-center"
-            >
+            <li key={step.title} className="flex flex-col items-center text-center">
               <span className="w-12 h-12 rounded-full bg-sun font-display font-bold text-lg text-bayou flex items-center justify-center">
                 {i + 1}
               </span>
-              <h3 className="mt-4 font-display font-semibold text-bayou">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-sm text-ebony/65 leading-relaxed max-w-xs">
-                {step.text}
-              </p>
+              <h3 className="mt-4 font-display font-semibold text-bayou">{step.title}</h3>
+              <p className="mt-2 text-sm text-ebony/65 leading-relaxed max-w-xs">{step.text}</p>
             </li>
           ))}
         </ol>
@@ -182,26 +157,16 @@ function Home() {
             Your tenants don't have to change a thing
           </h2>
           <p className="mt-6 text-lg text-ebony/70 leading-relaxed">
-            No app for them to download. No new number to send money to. They
-            pay you exactly the way they always have, you just record it here in
-            a few taps instead of hunting through your SMS inbox at month end.
+            No app for them to download. No new number to send money to. They pay
+            you exactly the way they always have, you just record it here in a few
+            taps instead of hunting through your SMS inbox at month end.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-bayou">
-            <span className="px-4 py-2 rounded-full bg-pearl/40">
-              Tenant pays as usual
-            </span>
-            <span aria-hidden="true" className="text-sun">
-              →
-            </span>
-            <span className="px-4 py-2 rounded-full bg-pearl/40">
-              You record it
-            </span>
-            <span aria-hidden="true" className="text-sun">
-              →
-            </span>
-            <span className="px-4 py-2 rounded-full bg-pearl/40">
-              History saved
-            </span>
+            <span className="px-4 py-2 rounded-full bg-pearl/40">Tenant pays as usual</span>
+            <span aria-hidden="true" className="text-sun">→</span>
+            <span className="px-4 py-2 rounded-full bg-pearl/40">You record it</span>
+            <span aria-hidden="true" className="text-sun">→</span>
+            <span className="px-4 py-2 rounded-full bg-pearl/40">History saved</span>
           </div>
         </div>
       </section>
