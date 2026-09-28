@@ -49,6 +49,22 @@ const validateEnums = ({ region, propertyType }) => {
   return null;
 };
 
+// Confirms this landlord owns the property before touching its photos.
+const findOwnedProperty = (propertyId, landlordId) =>
+  prisma.property.findFirst({
+    where: { id: propertyId, landlordId },
+  });
+
+// Sends back the property's photos in display order.
+const sendImages = async (res, propertyId) => {
+  const images = await prisma.propertyImage.findMany({
+    where: { propertyId },
+    orderBy: { position: "asc" },
+  });
+
+  res.status(200).json({ images });
+};
+
 export const createProperty = async (req, res) => {
   try {
     const {
@@ -203,5 +219,135 @@ export const deleteProperty = async (req, res) => {
   } catch (error) {
     console.error("deleteProperty:", error);
     res.status(500).json({ message: "Couldn't delete the property." });
+  }
+};
+
+// Adds photos to a property that already exists.
+export const addPropertyImages = async (req, res) => {
+  try {
+    const { images = [] } = req.body;
+
+    const property = await findOwnedProperty(req.params.id, req.userId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found." });
+    }
+
+    const imageError = validateImages(images);
+    if (imageError) {
+      return res.status(400).json({ message: imageError });
+    }
+
+    if (images.length === 0) {
+      return res.status(400).json({ message: "No photos to add." });
+    }
+
+    const existingCount = await prisma.propertyImage.count({
+      where: { propertyId: property.id },
+    });
+
+    if (existingCount + images.length > MAX_IMAGES) {
+      const room = MAX_IMAGES - existingCount;
+      return res.status(400).json({
+        message:
+          room === 0
+            ? `This property already has ${MAX_IMAGES} photos.`
+            : `You can only add ${room} more ${room === 1 ? "photo" : "photos"}.`,
+      });
+    }
+
+    await prisma.propertyImage.createMany({
+      data: images.map((img, index) => ({
+        url: img.url,
+        publicId: img.publicId,
+        position: existingCount + index,
+        propertyId: property.id,
+      })),
+    });
+
+    await sendImages(res, property.id);
+  } catch (error) {
+    console.error("addPropertyImages:", error);
+    res.status(500).json({ message: "Couldn't add the photos." });
+  }
+};
+
+// Removes one photo, then closes the gap it left in the ordering.
+export const deletePropertyImage = async (req, res) => {
+  try {
+    const { id, imageId } = req.params;
+
+    const property = await findOwnedProperty(id, req.userId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found." });
+    }
+
+    const image = await prisma.propertyImage.findFirst({
+      where: { id: imageId, propertyId: property.id },
+    });
+
+    if (!image) {
+      return res.status(404).json({ message: "Photo not found." });
+    }
+
+    await prisma.$transaction([
+      prisma.propertyImage.delete({ where: { id: image.id } }),
+      prisma.propertyImage.updateMany({
+        where: { propertyId: property.id, position: { gt: image.position } },
+        data: { position: { decrement: 1 } },
+      }),
+    ]);
+
+    await sendImages(res, property.id);
+  } catch (error) {
+    console.error("deletePropertyImage:", error);
+    res.status(500).json({ message: "Couldn't remove the photo." });
+  }
+};
+
+// Makes one photo the cover by swapping it with whatever sits at position 0.
+export const setCoverImage = async (req, res) => {
+  try {
+    const { id, imageId } = req.params;
+
+    const property = await findOwnedProperty(id, req.userId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found." });
+    }
+
+    const image = await prisma.propertyImage.findFirst({
+      where: { id: imageId, propertyId: property.id },
+    });
+
+    if (!image) {
+      return res.status(404).json({ message: "Photo not found." });
+    }
+
+    if (image.position === 0) {
+      return sendImages(res, property.id);
+    }
+
+    const currentCover = await prisma.propertyImage.findFirst({
+      where: { propertyId: property.id, position: 0 },
+    });
+
+    await prisma.$transaction([
+      prisma.propertyImage.update({
+        where: { id: image.id },
+        data: { position: 0 },
+      }),
+      ...(currentCover
+        ? [
+            prisma.propertyImage.update({
+              where: { id: currentCover.id },
+              data: { position: image.position },
+            }),
+          ]
+        : []),
+    ]);
+
+    await sendImages(res, property.id);
+  } catch (error) {
+    console.error("setCoverImage:", error);
+    res.status(500).json({ message: "Couldn't set the cover photo." });
   }
 };

@@ -4,19 +4,39 @@ import { api } from "../lib/api";
 import PageHeader from "../components/app/PageHeader";
 import Modal from "../components/ui/Modal";
 import PhotoUploader from "../components/PhotoUploader";
+import PropertyPhotoManager from "../components/PropertyPhotoManager";
 
 const REGIONS = [
-  "GREATER_ACCRA", "ASHANTI", "WESTERN", "WESTERN_NORTH", "CENTRAL",
-  "EASTERN", "VOLTA", "OTI", "NORTHERN", "SAVANNAH", "NORTH_EAST",
-  "UPPER_EAST", "UPPER_WEST", "BONO", "BONO_EAST", "AHAFO",
+  "GREATER_ACCRA",
+  "ASHANTI",
+  "WESTERN",
+  "WESTERN_NORTH",
+  "CENTRAL",
+  "EASTERN",
+  "VOLTA",
+  "OTI",
+  "NORTHERN",
+  "SAVANNAH",
+  "NORTH_EAST",
+  "UPPER_EAST",
+  "UPPER_WEST",
+  "BONO",
+  "BONO_EAST",
+  "AHAFO",
 ];
 
 const TYPES = [
-  "COMPOUND_HOUSE", "APARTMENT_BLOCK", "SINGLE_FAMILY", "COMMERCIAL",
+  "COMPOUND_HOUSE",
+  "APARTMENT_BLOCK",
+  "SINGLE_FAMILY",
+  "COMMERCIAL",
 ];
 
 const pretty = (v) =>
-  v.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  v
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function PropertyForm() {
   const navigate = useNavigate();
@@ -42,7 +62,7 @@ export default function PropertyForm() {
   useEffect(() => {
     if (!editing) return;
     api(`/properties/${id}`)
-      .then((data) =>
+      .then((data) => {
         setForm({
           name: data.property.name,
           address: data.property.address,
@@ -50,8 +70,9 @@ export default function PropertyForm() {
           region: data.property.region,
           propertyType: data.property.propertyType,
           description: data.property.description || "",
-        })
-      )
+        });
+        setImages(data.property.images || []);
+      })
       .catch((err) => setError(err.message));
   }, [id, editing]);
 
@@ -199,7 +220,13 @@ export default function PropertyForm() {
           />
         </div>
 
-        {!editing && (
+        {editing ? (
+          <PropertyPhotoManager
+            propertyId={id}
+            images={images}
+            onChange={setImages}
+          />
+        ) : (
           <PhotoUploader
             images={images}
             onChange={setImages}
@@ -216,10 +243,10 @@ export default function PropertyForm() {
             {loading
               ? "Saving…"
               : photosUploading
-              ? "Uploading photos…"
-              : editing
-              ? "Save changes"
-              : "Add property"}
+                ? "Uploading photos…"
+                : editing
+                  ? "Save changes"
+                  : "Add property"}
           </button>
 
           <Link
@@ -227,8 +254,8 @@ export default function PropertyForm() {
               fromOnboarding
                 ? "/dashboard"
                 : editing
-                ? `/properties/${id}`
-                : "/properties"
+                  ? `/properties/${id}`
+                  : "/properties"
             }
             className="text-sm text-ebony/60 hover:text-bayou"
           >
