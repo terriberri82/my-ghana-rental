@@ -28,24 +28,43 @@ function StatCard({ label, value, children, dark }) {
 }
 
 function MonthBars({ months }) {
-  const max = Math.max(...months.map((m) => m.total), 1);
+  const max = Math.max(...months.map((m) => Number(m.total)), 1);
+
+  const short = (n) =>
+    n >= 1000
+      ? `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`
+      : Math.round(n);
 
   return (
-    <div className="flex items-end gap-2.5 h-28">
-      {months.map((m, i) => (
-        <div
-          key={m.label}
-          className="flex-1 h-full flex flex-col justify-end items-center gap-1.5"
-        >
+    <div className="flex items-end gap-2.5 h-32">
+      {months.map((m, i) => {
+        const total = Number(m.total);
+        const isCurrent = i === months.length - 1;
+
+        return (
           <div
-            className={`w-full rounded-sm ${
-              i === months.length - 1 ? "bg-sun" : "bg-pearl"
-            }`}
-            style={{ height: `${Math.max((m.total / max) * 100, 3)}%` }}
-          />
-          <span className="text-[10px] text-ebony/50">{m.label}</span>
-        </div>
-      ))}
+            key={m.label}
+            className="flex-1 h-full flex flex-col justify-end items-center gap-1"
+          >
+            <span
+              className={`text-[10px] tabular-nums leading-none ${
+                isCurrent ? "text-sun font-medium" : "text-ebony/45"
+              }`}
+            >
+              {total > 0 ? short(total) : ""}
+            </span>
+
+            <div
+              className={`w-full rounded-sm ${
+                isCurrent ? "bg-sun" : "bg-pearl"
+              }`}
+              style={{ height: `${Math.max((total / max) * 100, 3)}%` }}
+            />
+
+            <span className="text-[10px] text-ebony/50">{m.label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
