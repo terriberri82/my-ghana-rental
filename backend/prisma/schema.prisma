@@ -91,6 +91,8 @@ model User {
   email        String?  @unique
   phone        String   @unique
   passwordHash String?
+  avatarUrl       String?
+  avatarPublicId  String?
   role         Role     @default(LANDLORD)
   inviteToken  String?  @unique
   createdAt    DateTime @default(now())

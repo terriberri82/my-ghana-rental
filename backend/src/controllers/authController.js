@@ -2,6 +2,30 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
 
+// The shape of the user we send back to the frontend.
+// Never includes passwordHash.
+const USER_FIELDS = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  role: true,
+  avatarUrl: true,
+  onboardingDismissed: true,
+};
+
+const publicUser = (user) => ({
+  id: user.id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  email: user.email,
+  phone: user.phone,
+  role: user.role,
+  avatarUrl: user.avatarUrl,
+  onboardingDismissed: user.onboardingDismissed,
+});
+
 const setAuthCookie = (res, user) => {
   const token = jwt.sign(
     { userId: user.id, role: user.role },
@@ -91,16 +115,7 @@ export const signup = async (req, res) => {
 
     setAuthCookie(res, user);
 
-    res.status(201).json({
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-      },
-    });
+    res.status(201).json({ user: publicUser(user) });
   } catch (error) {
     console.error("signup:", error);
     res.status(500).json({
@@ -149,17 +164,7 @@ export const login = async (req, res) => {
 
     setAuthCookie(res, user);
 
-    res.status(200).json({
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        onboardingDismissed: user.onboardingDismissed,
-      },
-    });
+    res.status(200).json({ user: publicUser(user) });
   } catch (error) {
     console.error("login:", error);
     res.status(500).json({
@@ -186,15 +191,7 @@ export const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-        role: true,
-        onboardingDismissed: true,
-      },
+      select: USER_FIELDS,
     });
 
     if (!user) {
@@ -210,7 +207,8 @@ export const getMe = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, phone, email } = req.body;
+    const { firstName, lastName, phone, email, avatarUrl, avatarPublicId } =
+      req.body;
 
     if (!firstName || !lastName || !phone) {
       return res.status(400).json({
@@ -258,6 +256,22 @@ export const updateProfile = async (req, res) => {
       }
     }
 
+    // Only touch the avatar if the frontend sent it.
+    // null clears the picture, undefined leaves it alone.
+    const avatarData =
+      avatarUrl === undefined
+        ? {}
+        : {
+            avatarUrl: avatarUrl || null,
+            avatarPublicId: avatarPublicId || null,
+          };
+
+    if (avatarUrl && !/^https:\/\/res\.cloudinary\.com\//.test(avatarUrl)) {
+      return res.status(400).json({
+        message: "That image address isn't valid.",
+      });
+    }
+
     const user = await prisma.user.update({
       where: { id: req.userId },
       data: {
@@ -265,16 +279,9 @@ export const updateProfile = async (req, res) => {
         lastName,
         phone: cleanPhone,
         email: cleanEmail,
+        ...avatarData,
       },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phone: true,
-        role: true,
-        onboardingDismissed: true,
-      },
+      select: USER_FIELDS,
     });
 
     res.status(200).json({ user });
