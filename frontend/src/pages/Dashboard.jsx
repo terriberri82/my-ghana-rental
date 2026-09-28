@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-import PageHeader from "../components/app/PageHeader";
+import { cloudinaryThumb } from "../utils/cloudinaryUrl";
 import SetupChecklist from "../components/SetupChecklist";
 
 function StatCard({ label, value, children, dark }) {
@@ -36,7 +36,7 @@ function MonthBars({ months }) {
       : Math.round(n);
 
   return (
-    <div className="flex items-end gap-2.5 h-32">
+    <div className="flex items-end gap-2.5 h-28">
       {months.map((m, i) => {
         const total = Number(m.total);
         const isCurrent = i === months.length - 1;
@@ -65,6 +65,36 @@ function MonthBars({ months }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function Greeting({ user, subtitle, action }) {
+  const initials =
+    `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase();
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="flex items-center gap-4">
+        {user?.avatarUrl ? (
+          <img
+            src={cloudinaryThumb(user.avatarUrl, 128, 128)}
+            alt=""
+            className="w-14 h-14 rounded-full object-cover ring-2 ring-sun"
+          />
+        ) : (
+          <span className="w-14 h-14 rounded-full bg-bayou text-paper font-display font-semibold text-lg grid place-items-center ring-2 ring-sun">
+            {initials || "?"}
+          </span>
+        )}
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-bayou">
+            Hello, {user?.firstName} {user?.lastName}
+          </h1>
+          <p className="mt-0.5 text-sm text-ebony/60">{subtitle}</p>
+        </div>
+      </div>
+      {action}
     </div>
   );
 }
@@ -118,8 +148,8 @@ export default function Dashboard() {
   if (propertyCount === 0) {
     return (
       <>
-        <PageHeader
-          title={`Hello, ${user?.firstName}`}
+        <Greeting
+          user={user}
           subtitle="Let's get your first property set up."
         />
         {!user?.onboardingDismissed ? (
@@ -153,8 +183,8 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader
-        title={`Hello, ${user?.firstName}`}
+      <Greeting
+        user={user}
         subtitle="Here's where your units stand today."
         action={
           <Link
@@ -196,7 +226,7 @@ export default function Dashboard() {
         </StatCard>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-3 mt-3">
+      <div className="grid lg:grid-cols-3 gap-3 mt-3">
         <div className="bg-white border border-pearl rounded-md p-4">
           <p className="text-xs font-medium text-bayou mb-4">
             Recorded each month
@@ -241,38 +271,38 @@ export default function Dashboard() {
             ))
           )}
         </div>
-      </div>
 
-      <div className="bg-white border border-pearl rounded-md p-4 mt-3">
-        <p className="text-xs font-medium text-bayou mb-3">Vacant units</p>
+        <div className="bg-white border border-pearl rounded-md p-4">
+          <p className="text-xs font-medium text-bayou mb-3">Vacant units</p>
 
-        {vacantUnits.length === 0 ? (
-          <p className="text-sm text-ebony/50">
-            Every unit is occupied. Nothing sitting empty.
-          </p>
-        ) : (
-          <div className="flex gap-2.5 flex-wrap">
-            {vacantUnits.map((u) => (
-              <Link
-                key={u.id}
-                to={`/units/${u.id}`}
-                className="flex items-center gap-2 border border-pearl rounded-sm px-3 py-2 hover:border-bayou"
-              >
-                <span className="w-6 h-6 grid place-items-center rounded-sm bg-brick/10 text-brick text-[10px] font-medium">
-                  {u.unitLabel}
-                </span>
-                <span>
-                  <span className="block text-[11px] text-ebony">
-                    {u.propertyName}
+          {vacantUnits.length === 0 ? (
+            <p className="text-sm text-ebony/50">
+              Every unit is occupied. Nothing sitting empty.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {vacantUnits.map((u) => (
+                <Link
+                  key={u.id}
+                  to={`/units/${u.id}`}
+                  className="flex items-center gap-2 border border-pearl rounded-sm px-3 py-2 hover:border-bayou"
+                >
+                  <span className="w-6 h-6 grid place-items-center rounded-sm bg-brick/10 text-brick text-[10px] font-medium">
+                    {u.unitLabel}
                   </span>
-                  <span className="block text-[10px] text-ebony/50">
-                    GHS {Number(u.rentAmount).toLocaleString()}
+                  <span>
+                    <span className="block text-[11px] text-ebony">
+                      {u.propertyName}
+                    </span>
+                    <span className="block text-[10px] text-ebony/50">
+                      GHS {Number(u.rentAmount).toLocaleString()}
+                    </span>
                   </span>
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

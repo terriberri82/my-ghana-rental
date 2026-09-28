@@ -91,9 +91,9 @@ export default function Sidebar() {
         >
           {user?.avatarUrl ? (
             <img
-              src={cloudinaryThumb(user.avatarUrl)}
+              src={cloudinaryThumb(user.avatarUrl, 64, 64)}
               alt=""
-              className="w-5 h-5 shrink-0 rounded-full object-cover"
+              className="w-7 h-7 shrink-0 rounded-full object-cover"
             />
           ) : (
             <Icon name="person" />
