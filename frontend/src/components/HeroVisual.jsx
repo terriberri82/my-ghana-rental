@@ -76,8 +76,8 @@ export default function HeroVisual() {
       className="relative h-[560px] md:h-[clamp(480px,calc(100vh-190px),600px)]"
       aria-hidden="true"
     >
-      {/* Gold ring behind the arches */}
-      <div className="absolute left-[22%] top-[4%] w-[74%] aspect-square rounded-full border-2 border-sun" />
+      {/* Gold ring behind the arches (sized by height so it never gets cut off) */}
+      <div className="absolute left-[22%] top-[4%] h-[92%] aspect-square rounded-full border-2 border-sun" />
 
       {/* Two stepped arches, each with its own slideshow */}
       <ArchSlideshow
