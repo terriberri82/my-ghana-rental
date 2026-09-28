@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api } from "../lib/api";
 import heroImage from "../assets/house-garden-tall.jpg";
 
 function ContactLine({ label, href, value }) {
@@ -18,6 +19,8 @@ function ContactLine({ label, href, value }) {
 
 function Contact() {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -28,9 +31,24 @@ function Contact() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setSent(true);
+    if (sending) return;
+
+    setSending(true);
+    setError("");
+
+    try {
+      await api("/contact", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
+      setSent(true);
+    } catch (err) {
+      setError(err.message || "Couldn't send your message. Please try again.");
+    } finally {
+      setSending(false);
+    }
   }
 
   const field =
@@ -70,8 +88,8 @@ function Contact() {
                   Message sent
                 </h2>
                 <p className="mt-3 text-ebony/70 leading-relaxed">
-                  Thanks, {form.name || "there"}. You'll get a reply at the
-                  address you gave within a day or two.
+                  Thanks, {form.name || "there"}. Your message is on its way and
+                  you'll hear back soon.
                 </p>
                 <button
                   onClick={() => {
@@ -136,32 +154,26 @@ function Contact() {
                     value={form.message}
                     onChange={handleChange}
                     required
+                    maxLength={2000}
                     placeholder="Tell us what you need help with."
                     className={`${field} resize-none`}
                   />
                 </div>
 
+                {error && <p className="text-sm text-brick">{error}</p>}
+
                 <button
                   type="submit"
-                  className="bg-sun text-ebony font-medium text-sm px-7 py-3 rounded-full hover:brightness-95 transition-colors"
+                  disabled={sending}
+                  className="bg-sun text-ebony font-medium text-sm px-7 py-3 rounded-full hover:brightness-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send message
+                  {sending ? "Sending…" : "Send message"}
                 </button>
               </form>
             )}
           </div>
 
           <div className="space-y-10">
-            <ContactLine
-              label="Email"
-              href="mailto:hello@myghanarental.com"
-              value="hello@myghanarental.com"
-            />
-            <ContactLine
-              label="WhatsApp"
-              href="https://wa.me/233000000000"
-              value="+233 00 000 0000"
-            />
             <ContactLine label="Based in" value="Accra, Ghana" />
 
             <div className="bg-pearl/40 p-6 rounded-sm">

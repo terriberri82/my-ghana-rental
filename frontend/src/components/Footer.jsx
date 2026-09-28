@@ -17,7 +17,7 @@ function Footer() {
   return (
     <footer className="bg-bayou-deep">
       <div className="max-w-7xl mx-auto px-6 md:px-14 py-14">
-        <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
+        <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
           <div>
             <Link to="/" className="flex items-center gap-3">
               <img src={logo} alt="" className="w-9 h-9" />
@@ -45,9 +45,9 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/about" className={linkClass}>
+                <a href="/#how-it-works" className={linkClass}>
                   How it works
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -67,22 +67,6 @@ function Footer() {
               </li>
             </ul>
           </div>
-
-          <div>
-            <h3 className="text-sm font-medium text-paper mb-3">Legal</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/privacy" className={linkClass}>
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className={linkClass}>
-                  Terms
-                </Link>
-              </li>
-            </ul>
-          </div>
         </div>
 
         <div className="mt-12 pt-6 border-t border-paper/10 flex flex-wrap items-center justify-between gap-4">
@@ -96,6 +80,13 @@ function Footer() {
               className="text-paper/60 hover:text-paper"
             >
               Unsplash
+            </FooterLink>{" "}
+            and{" "}
+            <FooterLink
+              href="https://www.pexels.com"
+              className="text-paper/60 hover:text-paper"
+            >
+              Pexels
             </FooterLink>
           </p>
         </div>
