@@ -32,6 +32,7 @@ export default function LeaseForm() {
   const [units, setUnits] = useState([]);
   const [loadingUnits, setLoadingUnits] = useState(!unitIdFromUrl);
   const [unit, setUnit] = useState(null);
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -42,6 +43,7 @@ export default function LeaseForm() {
     advanceMonths: 0,
     depositAmount: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [agreementUrl, setAgreementUrl] = useState("");
@@ -49,6 +51,7 @@ export default function LeaseForm() {
 
   useEffect(() => {
     if (unitIdFromUrl) return;
+
     api("/units")
       .then((data) => setUnits(data.units))
       .catch((err) => setError(err.message))
@@ -57,27 +60,43 @@ export default function LeaseForm() {
 
   useEffect(() => {
     if (!unitId) return;
+
     api(`/units/${unitId}`)
       .then((data) => {
         setUnit(data.unit);
-        setForm((f) => ({ ...f, rentAmount: String(data.unit.rentAmount) }));
+        setForm((f) => ({
+          ...f,
+          rentAmount: String(data.unit.rentAmount),
+        }));
       })
       .catch((err) => setError(err.message));
   }, [unitId]);
 
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (loading || uploadingDoc || !unitId) return;
+
+    // The lease agreement is optional.
+    // Do NOT block tenant creation while a document is uploading.
+    if (loading || !unitId) return;
 
     setLoading(true);
+    setError("");
+
     try {
       await api("/leases", {
         method: "POST",
-        body: JSON.stringify({ unitId, ...form, agreementUrl }),
+        body: JSON.stringify({
+          unitId,
+          ...form,
+          agreementUrl: agreementUrl || null,
+        }),
       });
 
       if (fromOnboarding) {
@@ -94,6 +113,7 @@ export default function LeaseForm() {
 
   const field =
     "w-full px-4 py-2.5 rounded-sm bg-white border border-pearl text-ebony placeholder:text-ebony/35 focus:outline-none focus:border-bayou focus:ring-1 focus:ring-bayou";
+
   const label = "block text-sm font-medium text-ebony mb-1.5";
 
   if (loadingUnits) {
@@ -104,10 +124,12 @@ export default function LeaseForm() {
     return (
       <div>
         <PageHeader title="Add a tenant" />
+
         <div className="border border-dashed border-pearl rounded-md p-10 text-center bg-white max-w-xl">
           <p className="text-sm text-ebony/65 leading-relaxed">
             You need a unit before you can add a tenant to it.
           </p>
+
           <Link
             to="/units/new"
             state={{ fromOnboarding }}
@@ -139,6 +161,7 @@ export default function LeaseForm() {
             <label htmlFor="unitId" className={label}>
               Unit
             </label>
+
             <select
               id="unitId"
               value={pickedUnitId}
@@ -150,6 +173,7 @@ export default function LeaseForm() {
               className={field}
             >
               <option value="">Choose a unit</option>
+
               {units.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.unitLabel} · {u.property?.name}
@@ -164,6 +188,7 @@ export default function LeaseForm() {
             <label htmlFor="firstName" className={label}>
               Tenant first name
             </label>
+
             <input
               id="firstName"
               name="firstName"
@@ -179,6 +204,7 @@ export default function LeaseForm() {
             <label htmlFor="lastName" className={label}>
               Last name
             </label>
+
             <input
               id="lastName"
               name="lastName"
@@ -195,6 +221,7 @@ export default function LeaseForm() {
           <label htmlFor="phone" className={label}>
             Tenant phone number
           </label>
+
           <input
             id="phone"
             name="phone"
@@ -204,6 +231,7 @@ export default function LeaseForm() {
             placeholder="024 123 4567"
             className={field}
           />
+
           <p className="mt-1 text-xs text-ebony/50">
             Used to reach them on WhatsApp. They don't get an account.
           </p>
@@ -214,6 +242,7 @@ export default function LeaseForm() {
             <label htmlFor="startDate" className={label}>
               Lease starts
             </label>
+
             <input
               id="startDate"
               name="startDate"
@@ -229,6 +258,7 @@ export default function LeaseForm() {
             <label htmlFor="endDate" className={label}>
               Lease ends
             </label>
+
             <input
               id="endDate"
               name="endDate"
@@ -245,6 +275,7 @@ export default function LeaseForm() {
           <label htmlFor="rentAmount" className={label}>
             Agreed rent (GHS per month)
           </label>
+
           <input
             id="rentAmount"
             name="rentAmount"
@@ -256,6 +287,7 @@ export default function LeaseForm() {
             required
             className={field}
           />
+
           <p className="mt-1 text-xs text-ebony/50">
             Defaults to the unit's rent. Change it if this tenant agreed
             something different.
@@ -267,6 +299,7 @@ export default function LeaseForm() {
             <label htmlFor="advanceMonths" className={label}>
               Months paid in advance
             </label>
+
             <input
               id="advanceMonths"
               name="advanceMonths"
@@ -281,9 +314,12 @@ export default function LeaseForm() {
 
           <div>
             <label htmlFor="depositAmount" className={label}>
-              Deposit (GHS){" "}
-              <span className="font-normal text-ebony/45">(optional)</span>
+              Deposit{" "}
+              <span className="font-normal text-ebony/45">
+                (optional)
+              </span>
             </label>
+
             <input
               id="depositAmount"
               name="depositAmount"
@@ -304,13 +340,18 @@ export default function LeaseForm() {
           onUploadingChange={setUploadingDoc}
         />
 
+        <p className="text-xs text-ebony/50">
+          The lease agreement is optional. You can add it now or upload it
+          later.
+        </p>
+
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={loading || uploadingDoc || !unitId}
+            disabled={loading || !unitId}
             className="bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Saving…" : uploadingDoc ? "Uploading…" : "Add tenant"}
+            {loading ? "Saving…" : "Add tenant"}
           </button>
 
           <Link
