@@ -19,10 +19,14 @@ function Navbar() {
 
   const lightText = pathname === "/about" || pathname === "/signup";
 
+  // Signup: photo sits behind the nav on phones (white text),
+  // form side sits behind it on desktop (dark text).
   const linkClass =
     pathname === "/login"
       ? "text-ebony/75 hover:text-bayou md:text-paper md:hover:text-paper/70"
-      : "text-ebony/75 hover:text-bayou";
+      : pathname === "/signup"
+        ? "text-paper hover:text-paper/70 md:text-ebony/75 md:hover:text-bayou"
+        : "text-ebony/75 hover:text-bayou";
 
   return (
     <nav
