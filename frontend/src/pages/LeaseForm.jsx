@@ -46,6 +46,8 @@ export default function LeaseForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // The agreement is optional.
   const [agreementUrl, setAgreementUrl] = useState("");
   const [uploadingDoc, setUploadingDoc] = useState(false);
 
@@ -64,6 +66,7 @@ export default function LeaseForm() {
     api(`/units/${unitId}`)
       .then((data) => {
         setUnit(data.unit);
+
         setForm((f) => ({
           ...f,
           rentAmount: String(data.unit.rentAmount),
@@ -73,18 +76,23 @@ export default function LeaseForm() {
   }, [unitId]);
 
   function handleChange(e) {
-    setForm({
-      ...form,
+    setForm((current) => ({
+      ...current,
       [e.target.name]: e.target.value,
-    });
+    }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    // The lease agreement is optional.
-    // Do NOT block tenant creation while a document is uploading.
-    if (loading || !unitId) return;
+    // Only prevent duplicate submissions.
+    // Cloudinary/document uploading must NOT block tenant creation.
+    if (loading) return;
+
+    if (!unitId) {
+      setError("Please choose a unit before adding the tenant.");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -95,6 +103,9 @@ export default function LeaseForm() {
         body: JSON.stringify({
           unitId,
           ...form,
+
+          // Agreement is optional.
+          // If no document was uploaded, send null.
           agreementUrl: agreementUrl || null,
         }),
       });
@@ -105,7 +116,8 @@ export default function LeaseForm() {
         navigate(`/units/${unitId}`);
       }
     } catch (err) {
-      setError(err.message);
+      console.error("Add tenant:", err);
+      setError(err.message || "Couldn't add the tenant.");
     } finally {
       setLoading(false);
     }
@@ -315,9 +327,7 @@ export default function LeaseForm() {
           <div>
             <label htmlFor="depositAmount" className={label}>
               Deposit{" "}
-              <span className="font-normal text-ebony/45">
-                (optional)
-              </span>
+              <span className="font-normal text-ebony/45">(optional)</span>
             </label>
 
             <input
@@ -341,14 +351,14 @@ export default function LeaseForm() {
         />
 
         <p className="text-xs text-ebony/50">
-          The lease agreement is optional. You can add it now or upload it
+          The lease agreement is optional. You can upload it now or add it
           later.
         </p>
 
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={loading || !unitId}
+            disabled={loading}
             className="bg-sun text-ebony font-medium text-sm px-7 py-2.5 rounded-full hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Saving…" : "Add tenant"}
