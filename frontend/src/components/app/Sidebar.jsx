@@ -48,18 +48,18 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="bg-bayou w-16 md:w-56 shrink-0 flex flex-col">
+    <aside className="hidden md:flex bg-bayou w-56 shrink-0 flex-col">
       <Link
         to="/"
-        className="h-20 flex items-center gap-3 px-3 md:px-5 hover:opacity-80 transition-opacity"
+        className="h-20 flex items-center gap-3 px-5 hover:opacity-80 transition-opacity"
       >
         <img src={logo} alt="" className="w-9 h-9 shrink-0" />
-        <span className="hidden md:block font-display text-sm font-semibold text-paper leading-tight">
+        <span className="font-display text-sm font-semibold text-paper leading-tight">
           My Ghana Rental
         </span>
       </Link>
 
-      <nav className="flex-1 px-2 md:px-3 space-y-1">
+      <nav className="flex-1 px-3 space-y-1">
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -73,12 +73,12 @@ export default function Sidebar() {
             }
           >
             <Icon name={link.icon} />
-            <span className="hidden md:block">{link.label}</span>
+            <span>{link.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-2 md:p-3 border-t border-paper/10 space-y-1">
+      <div className="p-3 border-t border-paper/10 space-y-1">
         <NavLink
           to="/profile"
           className={({ isActive }) =>
@@ -98,7 +98,7 @@ export default function Sidebar() {
           ) : (
             <Icon name="person" />
           )}
-          <span className="hidden md:block truncate">
+          <span className="truncate">
             {user?.firstName} {user?.lastName}
           </span>
         </NavLink>
@@ -107,8 +107,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-paper/60 hover:text-paper rounded-sm hover:bg-bayou-deep/50"
         >
-          <span className="hidden md:inline">Log out</span>
-          <span className="md:hidden">→</span>
+          Log out
         </button>
       </div>
     </aside>

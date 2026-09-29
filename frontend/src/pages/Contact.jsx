@@ -56,21 +56,21 @@ function Contact() {
 
   return (
     <div>
-      <section className="md:grid md:grid-cols-[55%_45%] bg-bayou">
-        <div className="px-6 md:px-14 py-20 md:py-28 flex items-center">
+      <section className="md:grid md:grid-cols-[11fr_9fr] bg-bayou">
+        <div className="px-6 md:px-14 py-12 md:py-28 flex items-center">
           <div>
-            <p className="text-sun text-xs mb-4">Contact</p>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-paper leading-[1.15]">
+            <p className="text-sun text-xs mb-3 md:mb-4">Contact</p>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-paper leading-[1.15] text-balance">
               Questions about your rentals?
             </h1>
-            <p className="mt-5 text-paper/70 leading-relaxed max-w-md">
+            <p className="mt-4 md:mt-5 text-sm sm:text-base text-paper/70 leading-relaxed max-w-md">
               Whether you're setting up your first property or something isn't
               working the way you expect, send a message and you'll hear back.
             </p>
           </div>
         </div>
 
-        <div className="relative h-56 md:h-auto">
+        <div className="relative h-48 sm:h-56 md:h-auto">
           <img
             src={heroImage}
             alt=""
@@ -79,15 +79,15 @@ function Contact() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 md:px-14 py-20">
-        <div className="grid md:grid-cols-[55%_45%] gap-12 md:gap-20">
+      <section className="max-w-7xl mx-auto px-6 md:px-14 py-12 md:py-20">
+        <div className="grid md:grid-cols-[11fr_9fr] gap-10 md:gap-16">
           <div>
             {sent ? (
               <div className="border-l-2 border-sun pl-6 py-2">
-                <h2 className="font-display text-2xl font-semibold text-bayou">
+                <h2 className="font-display text-xl md:text-2xl font-semibold text-bayou">
                   Message sent
                 </h2>
-                <p className="mt-3 text-ebony/70 leading-relaxed">
+                <p className="mt-3 text-sm sm:text-base text-ebony/70 leading-relaxed">
                   Thanks, {form.name || "there"}. Your message is on its way and
                   you'll hear back soon.
                 </p>
@@ -165,7 +165,7 @@ function Contact() {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="bg-sun text-ebony font-medium text-sm px-7 py-3 rounded-full hover:brightness-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto bg-sun text-ebony font-medium text-sm px-7 py-3 rounded-full hover:brightness-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {sending ? "Sending…" : "Send message"}
                 </button>
@@ -173,10 +173,10 @@ function Contact() {
             )}
           </div>
 
-          <div className="space-y-10">
+          <div className="space-y-8 md:space-y-10">
             <ContactLine label="Based in" value="Accra, Ghana" />
 
-            <div className="bg-pearl/40 p-6 rounded-sm">
+            <div className="bg-pearl/40 p-5 md:p-6 rounded-sm">
               <h3 className="font-display font-semibold text-bayou">
                 Already have an account?
               </h3>
