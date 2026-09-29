@@ -1,11 +1,10 @@
-
-
 # My Ghana Rental
-myghanarental.netlify.app
 
-A property management web app for landlords and tenants in Ghana.
+**Live site:** https://myghanarental.netlify.app
 
-Individual capstone project, Women's Techsters Sprint 2026.
+A property management web app for small landlords in Ghana.
+
+Individual capstone project, Women Techsters Sprint 2026.
 
 ---
 
@@ -13,303 +12,128 @@ Individual capstone project, Women's Techsters Sprint 2026.
 
 Most small landlords in Ghana manage properties informally. Rent records live in
 WhatsApp threads, paper receipts and memory. Leases are printed once and filed
-away. Repairs get reported by phone call and forgotten.
+away.
 
-The result: landlords have no single view of who has paid and who is behind, no
-record trail when a payment is disputed, and no reliable way to manage property
-remotely, for example from abroad on behalf of family. Tenants have no proof of
-what they paid, no visibility into their own lease, and no way to follow up on a
-reported fault.
+The result: landlords have no single view of who has paid, no record trail when
+a payment is disputed, and no reliable way to manage property remotely, for
+example from abroad on behalf of family.
 
 Existing property platforms are built for large agencies, priced accordingly,
-and assume a US style monthly rent cycle. They do not fit a landlord with three
-units in Accra.
+and assume a US style monthly rent cycle paid by card. They do not fit a
+landlord with three units in Accra whose tenants pay by MoMo, bank transfer or
+cash, often months in advance.
 
-My Ghana Rental gives landlords one organised place to manage properties,
-tenants, leases, rent payments and maintenance requests, and gives tenants their
-own login to view their lease, see their payment history and report problems.
-It is built mobile first, because most users will open it on a phone.
+My Ghana Rental gives landlords one organised place to manage properties, units,
+tenants, leases and rent payments. Tenants don't need an account or an app.
+They pay the way they always have, and the landlord records it in a few taps.
 
-The design also fits how rent actually works here. Rather than assuming a fixed
-monthly cycle, a lease stores a total amount and a period covered, and payments
-are recorded against that lease. Advance rent arrangements work as naturally as
-monthly ones.
+**Who it is for.** Small landlords with roughly 1 to 20 units, often a family
+property, sometimes managed remotely, and almost always from a phone.
 
-**Who it is for.** The primary user is the small landlord with one to ten units,
-often a family property, sometimes managed remotely. Not a buyer of enterprise
-software, but with a real tracking problem today. The secondary user is the
-tenant, who wants a clear record of payments, clarity on lease terms, and
-repairs that do not get ignored.
+## What It Does
 
-## How the App Operates
+- **Accounts:** sign up and log in with phone number or email and a password.
+  Sessions use a JWT stored in an httpOnly cookie.
+- **Guided setup:** a dashboard checklist walks new landlords through adding a
+  property, a unit and a tenant, with the option to skip.
+- **Properties and units:** add buildings with up to 10 photos each, then the
+  units inside them. Vacant units are flagged on the dashboard.
+- **Tenants and leases:** assign a tenant to a unit with rent, start and end
+  dates, deposit and months paid in advance. Upload the signed lease or take a
+  photo of it on a phone. Tenant details can be edited, and ending a lease early
+  keeps its full payment history.
+- **Payments:** record rent received by mobile money, cash or card and bank
+  transfer, then send the tenant a prefilled WhatsApp receipt.
+- **Dashboard:** units occupied and vacant, total recorded this month, a six
+  month payments chart, recent payments and vacant units.
+- **Profile:** edit account details and upload a profile photo.
+- **Contact form:** messages are delivered by email through Resend.
+- **Mobile friendly:** the whole app works on phones and tablets, with a top
+  bar and tab navigation on small screens.
 
-1. A landlord signs up and creates an account
-2. The landlord adds a property, for example an apartment block
-3. The landlord adds units within it, each with a rent amount
-4. The landlord assigns a tenant to a unit and records the lease terms, being
-   the start date, end date, total amount and payment schedule
-5. When a tenant pays, the landlord records the payment against that lease with
-   the amount, date, period covered and method used, being mobile money, cash or
-   bank transfer
-6. The landlord dashboard shows at a glance which tenants are current and which
-   are behind
-7. A tenant logs in and sees their own lease details and full payment history
-8. The tenant submits a maintenance request describing a problem in their unit
-9. The landlord sees the request and moves it from open to in progress to
-   resolved
-10. The landlord can message a tenant directly on WhatsApp using a prefilled
-    message link
+## Scope Decisions
 
-Landlord and tenant read from the same underlying records, so both always see
-the same truth. Every screen in the app is a view over six core entities: users,
-properties, units, leases, payments and maintenance requests.
+These were cut from the capstone build on purpose so the core record keeping
+could ship properly. Most already have tables or columns in the schema.
 
-## Minimum Viable Product
-
-The MVP covers accounts, properties, units, tenants, leases, payments and
-maintenance requests. Nothing else.
-
-**Screens:** Home, Sign Up, Login, About, Contact, Landlord Dashboard, Property
-Detail, Unit and Lease Detail, Maintenance List, Tenant Home.
-
-**Deliberately excluded, and why**
-
-| Excluded | Reason |
-|---|---|
-| Online payment integration | Mobile money merchant approval sits outside the project timeline. Payments are recorded manually with the method noted, which still delivers the record keeping value |
-| Applications and screening | An entire second product flow. Landlords onboard tenants they already have |
-| Vendors, inspections, expense reports | Valuable, but not why a user opens the app |
-| Rental search and listings | Depends on agent cooperation and listing supply the project cannot control |
-| WhatsApp Business API | Needs business verification. Replaced with wa.me prefilled links, which work on any phone with no integration |
-
-Later phases add expense tracking and financial reporting, tenant applications
-and screening, vendor management, and eventually payment integration.
+| Not in this version                     | Why                                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Tenant portal (tenant logins)           | Needs invite tokens, activation and role based routing. Planned next                                                     |
+| Maintenance requests                    | Only useful once tenants can log in to report issues. The `MaintenanceRequest` table is ready                            |
+| Online payments (Paystack)              | Only makes sense once tenants can pay from the portal. `paystackReference` and `PaymentStatus` are already in the schema |
+| Rent status labels (paid, due, overdue) | Needs a firm rule for how advance months and payment coverage dates interact. Planned next                               |
+| Condition reports                       | Lower priority than the portal. The `ConditionReport` table is ready                                                     |
+| Applications, vendors, listings         | Separate products. Landlords onboard tenants they already have                                                           |
 
 ## Tech Stack
 
-React, Vite, Tailwind CSS, React Router DOM, JavaScript ES6+, Git and GitHub.
+**Frontend:** React, Vite, Tailwind CSS, React Router DOM, lucide-react,
+deployed on Netlify.
 
-A backend and database will be added later in the Sprint. Until then the app
-runs on mock data shaped like the real entities, so connecting an API later
-means changing where data comes from rather than rewriting components.
+**Backend:** Node.js, Express, Prisma ORM, PostgreSQL on Neon, JWT auth with
+httpOnly cookies, bcrypt, deployed on Render.
 
-## About React Router DOM
+**Services:** Cloudinary for property photos, lease documents and profile
+photos. Resend for contact form email. WhatsApp `wa.me` links for receipts and
+messaging tenants.
 
-React builds single page applications. Everything renders inside one HTML file,
-with no built in concept of separate pages or URLs. React Router DOM adds that,
-letting the app show different components based on the URL without the browser
-ever reloading the page.
+## Deployment Note
 
-This project needs it because it has many distinct views, and each needs its own
-address so users can bookmark pages, use the back button and share links.
-
-How it is used here:
-
-`BrowserRouter` wraps the app and watches the URL.
-
-`Routes` and `Route` map each URL to the component that should render there.
-
-`Link` moves between pages without a full reload, which is what keeps React
-state alive during navigation. A plain anchor tag would reload the page and wipe
-that state.
-
-`Navigate` handles route protection. `AuthLayout` renders `<Navigate to="/login" replace />`
-when a logged out user tries to reach the dashboard, and `UnauthLayout` sends a
-logged in user away from the login and signup pages. Using the `Navigate`
-component rather than calling `useNavigate` inside `useEffect` avoids an
-infinite redirect loop.
-
-`Outlet` is the slot inside a layout where the matched child route renders. The
-layout stays mounted while only the inner page changes.
-
-`useNavigate` redirects after an action rather than after a click. Submitting
-the signup form sends the user to the dashboard programmatically, with
-`replace: true` so the back button will not return them to the form.
-
+The frontend (Netlify) and backend (Render) live on different domains. iPhone
+Safari blocks cookies from a different site, so the login cookie was being
+dropped on iPhones. The fix is a Netlify proxy in `frontend/public/_redirects`:
+the browser calls `/api/...` on the Netlify domain and Netlify forwards it to
+Render, so the cookie stays first-party.
 
 ## Getting Started
+
+This is a monorepo with a `frontend/` and a `backend/` folder.
 
 ```bash
 git clone https://github.com/terriberri82/my-ghana-rental.git
 cd my-ghana-rental
+```
+
+**Backend**
+
+```bash
+cd backend
+npm install
+npx prisma migrate dev
+npm run dev
+```
+
+Create `backend/.env`:
+
+```
+DATABASE_URL=         # Neon or local PostgreSQL connection string
+JWT_SECRET=           # any long random string
+PORT=5000
+CLIENT_URL=http://localhost:5173
+NODE_ENV=development
+RESEND_API_KEY=       # for the contact form
+CONTACT_TO_EMAIL=     # where contact form messages are sent
+```
+
+**Frontend**
+
+```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-
-
-# Data Model
-
-My Ghana Rental uses PostgreSQL (hosted on Neon) with Prisma ORM. The schema has seven tables designed around how landlords in Ghana actually manage property, including advance rent payments and mobile money.
-
-## Users
-
-Stores both landlords and tenants, separated by a `role` enum.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| firstName | String | |
-| lastName | String | Split from full name so names can be sorted and greetings personalised |
-| email | String? | Optional and unique |
-| phone | String | Required and unique, the real identifier |
-| passwordHash | String? | Optional until the account is activated |
-| role | Role | LANDLORD or TENANT |
-| inviteToken | String? | Single-use token for tenant activation |
-| createdAt | DateTime | |
-
-**Why phone is the identifier.** Landlords add tenants by name and phone number. Many tenants have no email address, and phone numbers are how people are reached in Ghana.
-
-**Why passwordHash is optional.** A tenant record exists as soon as the landlord creates it, before that person has ever logged in. The landlord shares an activation link over WhatsApp, and the tenant sets a password at that point.
-
-## Properties
-
-A building or plot owned by a landlord.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| landlordId | String | References Users |
-| name | String | Landlord's own label, e.g. "Adjei House" |
-| address | String | |
-| city | String | |
-| region | Region | Enum of the sixteen Ghanaian regions |
-| propertyType | PropertyType | COMPOUND_HOUSE, APARTMENT_BLOCK, SINGLE_FAMILY, COMMERCIAL |
-| description | String? | |
-| createdAt | DateTime | |
-
-**Why enums for region and propertyType.** They become dropdowns in the UI, which prevents inconsistent values like "Compound", "compound house" and "Compund" all meaning the same thing. Filtering stays reliable.
-
-## Units
-
-One rentable space inside a property. A single-family house has one unit; a compound house has one per room let.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| propertyId | String | References Properties |
-| unitLabel | String | e.g. "Room 3", "Ground floor" |
-| bedrooms | Int | |
-| bathrooms | Int | |
-| rentAmount | Decimal(12,2) | Asking price |
-| rentPeriod | RentPeriod | MONTHLY, SIX_MONTHS or ANNUAL |
-| status | UnitStatus | VACANT or OCCUPIED |
-| createdAt | DateTime | |
-
-**Why every property has units.** Treating a whole house as a single unit keeps one query path instead of two, so the code never branches on property type.
-
-**Why status is stored.** Occupancy could be computed from active leases, but storing it is faster to read. It is set in the same operation that creates or ends a lease so it cannot drift.
-
-## Leases
-
-An agreement between one tenant and one unit for a fixed period.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| unitId | String | References Units |
-| tenantId | String | References Users |
-| startDate | DateTime | |
-| endDate | DateTime | |
-| rentAmount | Decimal(12,2) | Agreed price, may differ from the unit's asking price |
-| rentPeriod | RentPeriod | |
-| advanceMonths | Int | Months paid upfront |
-| depositAmount | Decimal(12,2) | Security deposit |
-| agreementUrl | String? | Uploaded lease document |
-| status | LeaseStatus | ACTIVE, EXPIRED or TERMINATED |
-| previousLeaseId | String? | Links a renewal to the lease it replaced |
-| createdAt | DateTime | |
-
-**Why advanceMonths exists.** Ghanaian tenants commonly pay one or two years of rent upfront. Storing the month count lets the app show a landlord when a tenant's coverage runs out rather than pretending rent arrives monthly.
-
-**Why rentAmount is duplicated from Units.** The unit holds the current asking price. The lease holds what this tenant agreed to, and that must not change if the asking price is raised later.
-
-**Why renewals create a new record.** Extending `endDate` would destroy the record of the old terms. A new lease with `previousLeaseId` set preserves the full history of what a tenant paid over time.
-
-## Payments
-
-A payment covers a period, not just an amount.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| leaseId | String | References Leases |
-| tenantId | String | Who the payment is for |
-| recordedById | String? | Set when a landlord logs a payment by hand |
-| amount | Decimal(12,2) | |
-| method | PaymentMethod | MOBILE_MONEY, CARD or CASH |
-| paystackReference | String? | Null for manually recorded payments |
-| status | PaymentStatus | PENDING, SUCCESS or FAILED |
-| coversFrom | DateTime | Start of the period paid for |
-| coversTo | DateTime | End of the period paid for |
-| receiptNumber | String? | Human-readable, e.g. MGR-2026-0001 |
-| paidAt | DateTime? | Set only on confirmation |
-| createdAt | DateTime | |
-
-**Why money uses Decimal, not Float.** Floating point arithmetic loses precision, which is unacceptable for rent.
-
-**Why status and paidAt are separate.** Paystack reports a transaction as initiated first and confirms success later via webhook. A payment is created PENDING with no `paidAt`, and is only marked SUCCESS when the webhook confirms it server-side. Money is never treated as received before that.
-
-**Why recordedById is nullable.** A Paystack payment has no human who entered it. When the field is filled, it identifies the landlord who logged a cash payment, which matters if a tenant later disputes it.
-
-**Partial payments are not supported.** Allowing them would break the guarantee that `coversFrom` and `coversTo` describe a fully paid period.
-
-## MaintenanceRequests
-
-Issues raised by tenants against a unit.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| unitId | String | References Units |
-| tenantId | String | References Users |
-| title | String | |
-| description | String | |
-| priority | Priority | LOW, MEDIUM or HIGH |
-| status | RequestStatus | OPEN, IN_PROGRESS or RESOLVED |
-| imageUrls | String[] | Cloudinary links |
-| createdAt | DateTime | |
-| resolvedAt | DateTime? | |
-
-**Why there is no comments table.** Conversation happens on WhatsApp, where these users already are. The maintenance page links straight through with a `wa.me` link built from the other party's phone number. The landlord moves the status through the workflow, which carries most of the value at a fraction of the build cost.
-
-**Why images are URLs, not files.** Databases store references to images, not the images themselves. Files go to Cloudinary and the link is stored here.
-
-## ConditionReports
-
-Photographic record of a unit's state at the start and end of a tenancy.
-
-| Field | Type | Notes |
-|---|---|---|
-| id | String | UUID primary key |
-| leaseId | String | References Leases |
-| createdById | String | Landlord or tenant |
-| type | ReportType | MOVE_IN or MOVE_OUT |
-| notes | String? | |
-| imageUrls | String[] | Cloudinary links |
-| createdAt | DateTime | |
-
-**Why either party can submit both types.** At move-in the tenant needs proof of pre-existing damage so they are not charged for it. At move-out the landlord needs proof of new damage. Both sides have an interest at both ends, so both can document, and reports are displayed side by side labelled with who submitted them.
-
-**Why it is tied to the lease, not the unit.** The point is to prove the state of the place at the start and end of one specific tenancy.
-
-**Rules enforced in the routes, not the schema:**
-- MOVE_IN reports accepted within 7 days of `startDate`
-- MOVE_OUT reports accepted within 7 days either side of `endDate`
-- Reports cannot be edited once submitted, since their value depends on being a fixed record of a moment
-
-## Relationships
+Create `frontend/.env`:
 
 ```
-User (landlord) ──< Property ──< Unit ──< Lease ──< Payment
-                                    │        │
-                                    │        └──< ConditionReport
-                                    └──< MaintenanceRequest
-
-User (tenant) ──< Lease
-              ──< Payment
-              ──< MaintenanceRequest
-              ──< ConditionReport
+VITE_API_URL=http://localhost:5000
+VITE_CLOUDINARY_CLOUD_NAME=
+VITE_CLOUDINARY_UPLOAD_PRESET=
 ```
 
-Deletes cascade downward. Removing a property removes its units, and removing a unit removes its leases, so PostgreSQL handles the cleanup rather than application code.
+`VITE_` variables are readable in the browser, so they never hold secrets.
+
+## Other Docs
+
+- [`PRD.md`](PRD.md): product requirements
+- [`DATA_MODEL.md`](DATA_MODEL.md): the database schema, with the reasoning behind each table
